@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.sap.adt.tools.core.ui.preferencePages.ABAP"
+            class="com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage"
+            id="com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage"
+            name="ADT Cloud ALM Link">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.consetto.adt.cloudalmlink.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.intro.configExtension">
+      <configExtension
+            configId="org.eclipse.ui.intro.universalConfig"
+            content="Cloud ALM Link for ADT/sample.xml">
+      </configExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="ABAP"
+            id="com.consetto.adt.cloudalmlink">
+      </category>
+      <view
+            id="com.consetto.adt.cloudalmlink.views.TransportView"
+            name="Cloud ALM Transports"
+            icon="icons/CalmLink.png"
+            class="com.consetto.adt.cloudalmlink.views.TransportView"
+            category="com.consetto.adt.cloudalmlink"
+            inject="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               id="com.consetto.adt.cloudalmlink.views.TransportView"
+               relative="org.eclipse.ui.views.ProblemView"
+               relationship="right"
+               ratio="0.5">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:com.sap.adt.tm.ui.editor.TMEditor.ToolBar?endof=additions">
+         <command
+               commandId="com.consetto.adt.cloudalmlink.commands.opencalm"
+               icon="icons/CalmLink.png"
+               label="Open in Cloud ALM"
+               style="push">
+         </command>
+      </menuContribution>
+         <menuContribution
+            allPopups="false"
+            locationURI="popup:com.sap.adt.tm.ui.tmview?endof=additions">
+         <command
+               commandId="com.consetto.adt.cloudalmlink.commands.opencalm"
+               icon="icons/CalmLink.png"
+               label="Show Transports and Features"
+               style="push">
+           
+         </command>
+      </menuContribution>
+         <menuContribution
+               locationURI="popup:#EditorContext?after=com.sap.adt.tools.abapsource.ui.navigateInto.menu">
+            <command
+                  commandId="com.consetto.adt.cloudalmlink.commands.showtransports"
+                  icon="icons/CalmLink.png"
+                  label="Show Transports and Features"
+                  style="push">
+            </command>
+         </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="com.consetto.adt.cloudalmlink.commands.category"
+            name="Cloud ALM">
+      </category>
+      <command
+            categoryId="com.consetto.adt.cloudalmlink.commands.category"
+            id="com.consetto.adt.cloudalmlink.commands.showtransports"
+            name="Show Transports and Features">
+      </command>
+      <command
+            categoryId="com.consetto.adt.cloudalmlink.commands.category"
+            id="com.consetto.adt.cloudalmlink.commands.opencalm"
+            name="Open in Cloud ALM">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.consetto.adt.cloudalmlink.handlers.CalmTransportHandler"
+            commandId="com.consetto.adt.cloudalmlink.commands.opencalm">
+      </handler>
+      <handler
+            class="com.consetto.adt.cloudalmlink.handlers.CalmSourceHandler"
+            commandId="com.consetto.adt.cloudalmlink.commands.showtransports">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="com.consetto.adt.cloudalmlink.commands.showtransports"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+6">
+      </key>
+   </extension>
+
+</plugin>

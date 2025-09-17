@@ -1,0 +1,20 @@
+/bin/
+
+# Eclipse Project
+.project
+
+# Mac
+.DS_Store
+
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# Eclipse specific files/directories #
+######################################
+.classpath
+.project
+.settings
+.metadata
