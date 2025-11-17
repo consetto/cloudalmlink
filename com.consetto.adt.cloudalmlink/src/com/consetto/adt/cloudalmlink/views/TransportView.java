@@ -46,18 +46,7 @@ import com.consetto.adt.cloudalmlink.preferences.PreferenceConstants;
 import jakarta.inject.Inject;
 
 /**
- * This sample class demonstrates how to plug-in a new workbench view. The view
- * shows data obtained from the model. The sample creates a dummy model on the
- * fly, but a real implementation would connect to the model available either in
- * this or another plug-in (e.g. the workspace). The view is connected to the
- * model using a content provider.
- * <p>
- * The view uses a label provider to define how model objects should be
- * presented in the view. Each view can present the same model objects using
- * different labels and icons, if needed. Alternatively, a single label provider
- * can be shared between views in order to ensure that objects of the same type
- * are presented in the same way everywhere.
- * <p>
+ * The view shows data obtained from the version model.
  */
 
 public class TransportView extends ViewPart {
@@ -238,10 +227,16 @@ public class TransportView extends ViewPart {
 		showInBrowserAction = new Action() {
 			public void run() {
 				
-				
+								
 				ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
 						"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-				String baseUrl = scopedPreferenceStore.getString(PreferenceConstants.P_URL);
+				
+				String region = scopedPreferenceStore.getString(PreferenceConstants.P_REG);
+				String tenant = scopedPreferenceStore.getString(PreferenceConstants.P_TEN);
+				
+				// URL like "https://calm-demo.eu20.alm.cloud.sap
+				String baseUrl = "https://" + tenant + "." + region + ".alm.cloud.sap";
+
 				
 				IStructuredSelection selection = viewer.getStructuredSelection();
 				Object obj = selection.getFirstElement();

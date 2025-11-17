@@ -25,7 +25,11 @@ public class CalmTransportHandler extends AbstractHandler {
 
 		ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
 				"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-		String baseUrl = scopedPreferenceStore.getString(PreferenceConstants.P_URL);
+		String region = scopedPreferenceStore.getString(PreferenceConstants.P_REG);
+		String tenant = scopedPreferenceStore.getString(PreferenceConstants.P_TEN);
+		
+		// URL like "https://calm-demo.eu20.alm.cloud.sap
+		String baseUrl = "https://" + tenant + "." + region + ".alm.cloud.sap";
 
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 
