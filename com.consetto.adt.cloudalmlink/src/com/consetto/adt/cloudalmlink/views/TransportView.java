@@ -46,14 +46,11 @@ import com.consetto.adt.cloudalmlink.preferences.PreferenceConstants;
 import jakarta.inject.Inject;
 
 /**
- * The view shows data obtained from the version model.
+ * Eclipse View displaying transport versions and their associated Cloud ALM features.
+ * Provides table view with columns for ID, Transport, Title, Feature, Status, and Responsible.
  */
-
 public class TransportView extends ViewPart {
 
-	/**
-	 * The ID of the view as specified by the extension.
-	 */
 	public static final String ID = "com.consetto.adt.cloudalmlink.views.TransportView";
 
 	@Inject
@@ -61,35 +58,39 @@ public class TransportView extends ViewPart {
 
 	private TableViewer viewer;
 	private Action showInBrowserAction;
-	private Action doubleClickAction;
 
-
+	@Override
 	public void createPartControl(Composite parent) {
 		GridLayout layout = new GridLayout(2, false);
 		parent.setLayout(layout);
+
 		Label searchLabel = new Label(parent, SWT.NONE);
 		searchLabel.setText("Search: ");
+
 		final Text searchText = new Text(parent, SWT.BORDER | SWT.SEARCH);
 		searchText.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_FILL));
+
 		createViewer(parent);
 	}
 
+	/**
+	 * Creates and configures the table viewer for displaying version data.
+	 */
 	private void createViewer(Composite parent) {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 		createColumns(parent, viewer);
+
 		final Table table = viewer.getTable();
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 
 		viewer.setContentProvider(new ArrayContentProvider());
-		// Get the content for the viewer, setInput will call getElements in the
-		// contentProvider
 		viewer.setInput(VersionData.INSTANCE.getVersions());
-		// make the selection available to other views
-		getSite().setSelectionProvider(viewer);
-		// Set the sorter for the table
 
-		// Layout the viewer
+		// Make selection available to other views
+		getSite().setSelectionProvider(viewer);
+
+		// Configure table layout
 		GridData gridData = new GridData();
 		gridData.verticalAlignment = GridData.FILL;
 		gridData.horizontalSpan = 2;
@@ -98,24 +99,24 @@ public class TransportView extends ViewPart {
 		gridData.horizontalAlignment = GridData.FILL;
 		viewer.getControl().setLayoutData(gridData);
 
-		// contributeToActionBars
 		makeActions();
 		contributeToActionBars();
 		hookContextMenu();
 		hookDoubleClickAction();
-
 	}
 
 	public TableViewer getViewer() {
 		return viewer;
 	}
 
-	// This will create the columns for the table
+	/**
+	 * Creates table columns for version/feature display.
+	 */
 	private void createColumns(final Composite parent, final TableViewer viewer) {
-		String[] titles = { "ID", "Transport", "Title", "Feature", "Status", "Reponsible" };
-		int[] bounds = { 100, 100, 180, 100, 100 , 100 };
+		String[] titles = { "ID", "Transport", "Title", "Feature", "Status", "Responsible" };
+		int[] bounds = { 100, 100, 180, 100, 100, 100 };
 
-		// First column is for the ID
+		// ID column
 		TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -125,7 +126,7 @@ public class TransportView extends ViewPart {
 			}
 		});
 
-		// Second column is for the transport
+		// Transport column
 		col = createTableViewerColumn(titles[1], bounds[1], 1);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -135,7 +136,7 @@ public class TransportView extends ViewPart {
 			}
 		});
 
-		// now the title
+		// Title column
 		col = createTableViewerColumn(titles[2], bounds[2], 2);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -145,7 +146,7 @@ public class TransportView extends ViewPart {
 			}
 		});
 
-		// now the Feature
+		// Feature column
 		col = createTableViewerColumn(titles[3], bounds[3], 3);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -153,9 +154,9 @@ public class TransportView extends ViewPart {
 				VersionElement v = (VersionElement) element;
 				return v.getFeature() != null ? v.getFeature().getDisplayId() : "No Feature";
 			}
-
 		});
-		// now the Status
+
+		// Status column
 		col = createTableViewerColumn(titles[4], bounds[4], 4);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -163,21 +164,17 @@ public class TransportView extends ViewPart {
 				VersionElement v = (VersionElement) element;
 				return v.getFeature() != null ? v.getFeature().getStatus() : "No Feature";
 			}
-
 		});
-		
-		// now the Responsible
+
+		// Responsible column
 		col = createTableViewerColumn(titles[5], bounds[5], 5);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
 				VersionElement v = (VersionElement) element;
-				return v.getFeature() != null ? v.getFeature().getResponsibleId(): "No Feature";
+				return v.getFeature() != null ? v.getFeature().getResponsibleId() : "No Feature";
 			}
-
 		});
-		
-
 	}
 
 	private TableViewerColumn createTableViewerColumn(String title, int bound, final int colNumber) {
@@ -188,9 +185,11 @@ public class TransportView extends ViewPart {
 		column.setResizable(true);
 		column.setMoveable(true);
 		return viewerColumn;
-
 	}
 
+	/**
+	 * Label provider for table cells with image support.
+	 */
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 		@Override
 		public String getColumnText(Object obj, int index) {
@@ -229,74 +228,64 @@ public class TransportView extends ViewPart {
 
 	private void fillLocalPullDown(IMenuManager manager) {
 		manager.add(showInBrowserAction);
-//		manager.add(new Separator());
-//		manager.add(action2);
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
 		manager.add(showInBrowserAction);
-
-		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
 
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(showInBrowserAction);
-
 	}
 
+	/**
+	 * Creates the "Open in Cloud ALM" action for viewing features in browser.
+	 */
 	private void makeActions() {
 		showInBrowserAction = new Action() {
 			public void run() {
-				
-								
 				ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
 						"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-				
+
 				String region = scopedPreferenceStore.getString(PreferenceConstants.P_REG);
 				String tenant = scopedPreferenceStore.getString(PreferenceConstants.P_TEN);
-				
-				// URL like "https://calm-demo.eu20.alm.cloud.sap
 				String baseUrl = "https://" + tenant + "." + region + ".alm.cloud.sap";
 
-				
 				IStructuredSelection selection = viewer.getStructuredSelection();
 				Object obj = selection.getFirstElement();
-				
-			   // if obj is VersionElement, get Feature ID and open in browser
+
 				if (obj instanceof VersionElement) {
-					
 					VersionElement version = (VersionElement) obj;
 					String featureId = version.getFeature() != null ? version.getFeature().getDisplayId() : null;
+
 					if (featureId != null) {
-						// Open the URL in the browser
 						String calmURL = baseUrl + "/launchpad#feature-display?sap-ui-app-id-hint=com.sap.calm.imp.cdm.features.ui&/details/"
 								+ featureId;
-							try {
-								PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(calmURL));
-							} catch (PartInitException | MalformedURLException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						
+						try {
+							PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(calmURL));
+						} catch (PartInitException | MalformedURLException e) {
+							// Browser could not be opened - fail silently
+						}
 					} else {
 						showMessage("No Feature ID available for this transport.");
 					}
 				} else {
 					showMessage("Please select a valid Element.");
 				}
-				
 			}
 		};
 		showInBrowserAction.setText("Open in Cloud ALM");
 		showInBrowserAction.setToolTipText("Show in Browser");
-
 	}
 
+	/**
+	 * Registers double-click listener to trigger the browser action.
+	 */
 	private void hookDoubleClickAction() {
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event) {
-				doubleClickAction.run();
+				showInBrowserAction.run();
 			}
 		});
 	}
@@ -310,8 +299,12 @@ public class TransportView extends ViewPart {
 		viewer.getControl().setFocus();
 	}
 
+	/**
+	 * Updates the view with new version data.
+	 *
+	 * @param versions The version data to display
+	 */
 	public void setVersionData(VersionData versions) {
-
 		viewer.setInput(versions.getVersions());
 	}
 }

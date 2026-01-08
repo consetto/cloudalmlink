@@ -12,44 +12,41 @@ import com.consetto.adt.cloudalmlink.model.FeatureElement;
 import com.consetto.adt.cloudalmlink.model.VersionElement;
 import com.google.gson.Gson;
 
-public class FeatureResponseHandler implements  HttpClientResponseHandler<String>{
-	
-	
+/**
+ * HTTP response handler for Cloud ALM feature API requests.
+ * Deserializes JSON responses into FeatureElement objects and associates them with versions.
+ */
+public class FeatureResponseHandler implements HttpClientResponseHandler<String> {
+
 	private VersionElement version;
-	
-	// constructor with version element as input parameter
-	
+
+	/**
+	 * Creates a handler that will associate the retrieved feature with the specified version.
+	 *
+	 * @param version The version element to receive the feature data
+	 */
 	public FeatureResponseHandler(VersionElement version) {
 		this.version = version;
 	}
 
 	@Override
 	public String handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
-		
-		// Check the response status code
 		int statusCode = response.getCode();
-		System.out.println("Response status code: " + statusCode);
-		if (statusCode != 200) {
-			System.out.println("Error: " + response.getReasonPhrase());
-			return null; // or throw an exception
-		}
-		// Get the response entity
-		HttpEntity entity = response.getEntity();
-		// Get response body
-		if (entity != null) {
 
+		if (statusCode != 200) {
+			return null;
+		}
+
+		HttpEntity entity = response.getEntity();
+		if (entity != null) {
 			String content = new String(entity.getContent().readAllBytes(), StandardCharsets.UTF_8);
 
-			// serialize the JSON content to a FeatureElement object using Gson
+			// Deserialize JSON response to FeatureElement and associate with version
 			Gson gson = new Gson();
 			FeatureElement feature = gson.fromJson(content, FeatureElement.class);
-			System.out.println("Token: " + feature.toString());
-
-			System.out.println("Response body: " + content);
 			version.setFeature(feature);
-	}
+		}
+
 		return null;
 	}
-
-
 }
