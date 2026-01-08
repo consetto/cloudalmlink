@@ -91,6 +91,18 @@ public class FeatureElement {
 
 	}
 
+	public String getStatus() {
+		return statusCode;
 
+	}
+	
+	public String getProjectId() {
+		return projectId;
+	}
+	
+	// get responsible
+	public String getResponsibleId() {
+		return responsibleId;
+	}
 
 }

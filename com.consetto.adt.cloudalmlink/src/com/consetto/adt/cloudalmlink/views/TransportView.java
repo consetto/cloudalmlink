@@ -112,8 +112,8 @@ public class TransportView extends ViewPart {
 
 	// This will create the columns for the table
 	private void createColumns(final Composite parent, final TableViewer viewer) {
-		String[] titles = { "ID", "Transport", "Title", "Feature" };
-		int[] bounds = { 100, 100, 100, 100 };
+		String[] titles = { "ID", "Transport", "Title", "Feature", "Status", "Reponsible" };
+		int[] bounds = { 100, 100, 180, 100, 100 , 100 };
 
 		// First column is for the ID
 		TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
@@ -155,6 +155,28 @@ public class TransportView extends ViewPart {
 			}
 
 		});
+		// now the Status
+		col = createTableViewerColumn(titles[4], bounds[4], 4);
+		col.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				VersionElement v = (VersionElement) element;
+				return v.getFeature() != null ? v.getFeature().getStatus() : "No Feature";
+			}
+
+		});
+		
+		// now the Responsible
+		col = createTableViewerColumn(titles[5], bounds[5], 5);
+		col.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				VersionElement v = (VersionElement) element;
+				return v.getFeature() != null ? v.getFeature().getResponsibleId(): "No Feature";
+			}
+
+		});
+		
 
 	}
 

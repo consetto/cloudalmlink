@@ -49,6 +49,12 @@ public class CalmSourceHandler extends AbstractHandler {
 
 		// get ADT URL
 		String adtUrl = editor.getModelFile().getRawLocationURI().toString();
+		// get project
+		
+		
+		IProject project = editor.getModelFile().getProject();
+		
+		IAbapProject abapProject = (IAbapProject) project.getAdapter(IAbapProject.class);
 		// print ADT URL
 
 		System.out.println("ADT URL: " + adtUrl);
@@ -102,11 +108,10 @@ public class CalmSourceHandler extends AbstractHandler {
 		IRestResourceFactory restResourceFactory = AdtRestResourceFactory.createRestResourceFactory();
 		// Get available projects in the workspace
 		IProject[] abapProjects = AdtProjectServiceFactory.createProjectService().getAvailableAbapProjects();
-		// Use the first project in the workspace for the demo
-		// to keep the example simple
-		IAbapProject abapProject = (IAbapProject) abapProjects[0].getAdapter(IAbapProject.class);
+//		ToDo Remove IAbapProject abapProject = (IAbapProject) abapProjects[0].getAdapter(IAbapProject.class);
 		// Trigger logon dialog if necessary
-		AdtLogonServiceUIFactory.createLogonServiceUI().ensureLoggedOn(abapProject.getDestinationData(),
+
+		AdtLogonServiceUIFactory.createLogonServiceUI().ensureLoggedOn( abapProject.getDestinationData(),
 				PlatformUI.getWorkbench().getProgressService());
 		// Create REST resource for given destination and URI
 
