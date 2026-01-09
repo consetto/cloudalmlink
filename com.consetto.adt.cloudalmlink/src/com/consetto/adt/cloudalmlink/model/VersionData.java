@@ -100,4 +100,29 @@ public enum VersionData {
 	public Iterable<VersionElement> getVersions() {
 		return versions;
 	}
+
+	/**
+	 * Adds an "Active" version entry at the beginning of the versions list.
+	 * This represents the current working version with its transport assignment.
+	 *
+	 * @param transportId The transport request ID for the active version
+	 */
+	public void addActiveVersion(String transportId) {
+		if (transportId == null || transportId.isEmpty()) {
+			return;
+		}
+
+		// Create active version element
+		VersionElement activeVersion = new VersionElement();
+		activeVersion.setID("Active");
+		activeVersion.setTransport(transportId);
+		activeVersion.setTitle("Current working version");
+		activeVersion.setLastUpdate(java.time.Instant.now().toString());
+
+		// Fetch Cloud ALM feature for the active transport
+		calmApiHandler.getFeature(transportId, activeVersion);
+
+		// Add at the beginning of the list
+		versions.add(0, activeVersion);
+	}
 }
