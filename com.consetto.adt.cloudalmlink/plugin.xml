@@ -127,5 +127,16 @@
             sequence="M1+6">
       </key>
    </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector
+            activate="true"
+            class="com.consetto.adt.cloudalmlink.handlers.CalmCommentScanner"
+            description="Opens Cloud ALM items from comment references (6-NNNN for features, 3-NNNN for tasks)"
+            id="com.consetto.adt.cloudalmlink.handlers.CalmCommentScanner"
+            name="Cloud ALM Links"
+            targetId="org.eclipse.ui.DefaultTextEditor">
+      </hyperlinkDetector>
+   </extension>
 
 </plugin>
