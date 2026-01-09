@@ -6,6 +6,8 @@ Cloud ALM Link integrates SAP Cloud ALM with ABAP Development Tools (ADT) in Ecl
 
 - Eclipse IDE 2025-03 or newer
 - ABAP Development Tools (ADT) installed
+- Enabled Cloud ALM API with Scope calm-api.features.read
+https://help.sap.com/docs/cloud-alm/apis/enabling-sap-cloud-alm-apis?locale=en-US
 
 ## Installation
 
@@ -29,6 +31,8 @@ Before using the plugin, you need to configure your Cloud ALM tenant settings:
 3. Enter your Cloud ALM settings:
    - **Tenant**: Your Cloud ALM tenant name (e.g., `mycompany`)
    - **Region**: Your Cloud ALM region (e.g., `eu10`)
+   - **Client ID**: Your Client ID
+   - **Client Secret**: Your Client Secret
 
 ## Features
 
