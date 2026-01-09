@@ -75,7 +75,7 @@
          <command
                commandId="com.consetto.adt.cloudalmlink.commands.opencalm"
                icon="icons/CalmLink.png"
-               label="Show Transports and Features"
+               label="Open in Cloud ALM"
                style="push">
            
          </command>

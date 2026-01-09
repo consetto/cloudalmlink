@@ -100,9 +100,8 @@ public class CalmSourceHandler extends AbstractHandler {
 
 		String destination = abapProject.getDestinationId();
 
-		// ============================================================================
+
 		// STEP 1: Fetch the ACTIVE version's transport from /transports endpoint
-		// ============================================================================
 		String activeTransportId = null;
 		if (transportsURL != null) {
 			try {
@@ -151,10 +150,8 @@ public class CalmSourceHandler extends AbstractHandler {
 				// Transport fetch failed - continue without active version
 			}
 		}
-
-		// ============================================================================
+		
 		// STEP 2: Fetch released versions from /versions endpoint
-		// ============================================================================
 		URI versionUri = URI.create(versionURIString);
 		IRestResource versionResource = restResourceFactory.createResourceWithStatelessSession(versionUri, destination);
 
@@ -176,9 +173,7 @@ public class CalmSourceHandler extends AbstractHandler {
 					"An exception occurred reading the versions: " + e.getMessage());
 		}
 
-		// ============================================================================
 		// STEP 3: Add active transport as first entry if found
-		// ============================================================================
 		if (versions != null && activeTransportId != null) {
 			versions.addActiveVersion(activeTransportId);
 		}
