@@ -95,7 +95,7 @@ public class CalmTransportHandler extends AbstractHandler {
 	/**
 	 * Extracts the Cloud ALM feature ID from a transport description.
 	 * Feature IDs follow the pattern "6-NNNN" (e.g., "6-123").
-	 *
+	 * (Fallback method if API lookup fails.)
 	 * @param descr The transport request description
 	 * @return The feature ID if found and valid, null otherwise
 	 */

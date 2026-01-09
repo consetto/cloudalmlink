@@ -47,7 +47,7 @@ public class CalmSourceHandler extends AbstractHandler {
 		// Get the active ADT editor and extract source information
 		IAdtFormEditor editor = (IAdtFormEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 				.getActiveEditor();
-
+		
 		IProject project = editor.getModelFile().getProject();
 		IAbapProject abapProject = (IAbapProject) project.getAdapter(IAbapProject.class);
 
@@ -60,6 +60,7 @@ public class CalmSourceHandler extends AbstractHandler {
 		String adtBasePath = null;
 
 		for (IAtomLink link : links) {
+			
 			// Find versions endpoint
 			if (link.getHref().contains("source/main/versions")
 					|| link.getHref().contains("implementations/versions")
