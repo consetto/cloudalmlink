@@ -7,7 +7,6 @@ import java.util.Base64;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -89,23 +88,24 @@ public class CalmApiHandler {
 	 */
 	private void getOAuthToken() {
 		try {
-			CloseableHttpResponse response = httpClient.execute(httpTokenPost);
-			int statusCode = response.getCode();
+			token = httpClient.execute(httpTokenPost, response -> {
+				int statusCode = response.getCode();
+				if (statusCode != 200) {
+					return null;
+				}
 
-			if (statusCode != 200) {
-				return;
-			}
+				HttpEntity entity = response.getEntity();
+				if (entity != null) {
+					String content = new String(entity.getContent().readAllBytes(), StandardCharsets.UTF_8);
 
-			HttpEntity entity = response.getEntity();
-			if (entity != null) {
-				String content = new String(entity.getContent().readAllBytes(), StandardCharsets.UTF_8);
-
-				// Deserialize JSON response to BearerToken object
-				Gson gson = new Gson();
-				token = gson.fromJson(content, BearerToken.class);
-				token.setExpirationTime();
-			}
-			response.close();
+					// Deserialize JSON response to BearerToken object
+					Gson gson = new Gson();
+					BearerToken newToken = gson.fromJson(content, BearerToken.class);
+					newToken.setExpirationTime();
+					return newToken;
+				}
+				return null;
+			});
 		} catch (IOException e) {
 			// Authentication failed - subsequent API calls will retry
 		}
