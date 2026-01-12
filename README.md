@@ -2,6 +2,8 @@
 
 Cloud ALM Link integrates SAP Cloud ALM with ABAP Development Tools (ADT) in Eclipse, allowing you to navigate seamlessly between your ABAP development environment and Cloud ALM.
 
+Detailed information can be found at https://cloudalmlink.consetto.com/
+
 ## Prerequisites
 
 - Eclipse IDE 2025-03 or newer
