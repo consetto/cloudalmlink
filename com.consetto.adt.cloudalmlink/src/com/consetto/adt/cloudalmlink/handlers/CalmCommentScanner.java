@@ -14,13 +14,13 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 /**
  * Scans source code for Cloud ALM IDs.
- * Supports features (6-NNNN) and tasks/requirements (3-NNNN).
+ * Supports features (6-NNNN), tasks/requirements (3-NNNN), documents (7-NNNN), and libraries (15-NNNN).
  * Creates clickable links that open the item in Cloud ALM.
  */
 public class CalmCommentScanner implements IHyperlinkDetector {
 
-	// Matches both features (6-NNNN) and tasks/requirements (3-NNNN)
-	private static final Pattern CALM_ID_PATTERN = Pattern.compile("[36]-\\d+");
+	// Matches features (6-NNNN), tasks/requirements (3-NNNN), documents (7-NNNN), and libraries (15-NNNN)
+	private static final Pattern CALM_ID_PATTERN = Pattern.compile("(?:3|6|7|15)-\\d+");
 
 	@Override
 	public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
