@@ -1,6 +1,7 @@
 package com.consetto.adt.cloudalmlink.preferences;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
@@ -27,6 +28,7 @@ public class CloudAlmPeferencePage extends FieldEditorPreferencePage implements 
 		addField(new StringFieldEditor(PreferenceConstants.P_REG, "Region:", getFieldEditorParent()));
 		addField(new StringFieldEditor(PreferenceConstants.P_CID, "Client ID:", getFieldEditorParent()));
 		addField(new StringFieldEditor(PreferenceConstants.P_KEY, "Client Secret:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(PreferenceConstants.P_DEMO, "Enable Demo Mode", getFieldEditorParent()));
 	}
 
 	@Override

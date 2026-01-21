@@ -2,6 +2,7 @@ package com.consetto.adt.cloudalmlink.views;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.Action;
@@ -39,6 +40,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+import com.consetto.adt.cloudalmlink.model.DemoDataProvider;
 import com.consetto.adt.cloudalmlink.model.VersionData;
 import com.consetto.adt.cloudalmlink.model.VersionElement;
 import com.consetto.adt.cloudalmlink.preferences.PreferenceConstants;
@@ -58,6 +60,7 @@ public class TransportView extends ViewPart {
 
 	private TableViewer viewer;
 	private Action showInBrowserAction;
+	private boolean isDemoMode = false;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -245,13 +248,6 @@ public class TransportView extends ViewPart {
 	private void makeActions() {
 		showInBrowserAction = new Action() {
 			public void run() {
-				ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
-						"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-
-				String region = scopedPreferenceStore.getString(PreferenceConstants.P_REG);
-				String tenant = scopedPreferenceStore.getString(PreferenceConstants.P_TEN);
-				String baseUrl = "https://" + tenant + "." + region + ".alm.cloud.sap";
-
 				IStructuredSelection selection = viewer.getStructuredSelection();
 				Object obj = selection.getFirstElement();
 
@@ -260,8 +256,18 @@ public class TransportView extends ViewPart {
 					String featureId = version.getFeature() != null ? version.getFeature().getDisplayId() : null;
 
 					if (featureId != null) {
-						String calmURL = baseUrl + "/launchpad#feature-display?sap-ui-app-id-hint=com.sap.calm.imp.cdm.features.ui&/details/"
-								+ featureId;
+						String calmURL;
+						if (isDemoMode) {
+							calmURL = DemoDataProvider.DEMO_CLOUD_ALM_URL;
+						} else {
+							ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
+									"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
+							String region = scopedPreferenceStore.getString(PreferenceConstants.P_REG);
+							String tenant = scopedPreferenceStore.getString(PreferenceConstants.P_TEN);
+							String baseUrl = "https://" + tenant + "." + region + ".alm.cloud.sap";
+							calmURL = baseUrl + "/launchpad#feature-display?sap-ui-app-id-hint=com.sap.calm.imp.cdm.features.ui&/details/"
+									+ featureId;
+						}
 						try {
 							PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(calmURL));
 						} catch (PartInitException | MalformedURLException e) {
@@ -305,6 +311,17 @@ public class TransportView extends ViewPart {
 	 * @param versions The version data to display
 	 */
 	public void setVersionData(VersionData versions) {
+		isDemoMode = false;
 		viewer.setInput(versions.getVersions());
+	}
+
+	/**
+	 * Updates the view with demo data and sets demo mode flag.
+	 *
+	 * @param demoVersions The demo version elements to display
+	 */
+	public void setDemoData(List<VersionElement> demoVersions) {
+		isDemoMode = true;
+		viewer.setInput(demoVersions);
 	}
 }

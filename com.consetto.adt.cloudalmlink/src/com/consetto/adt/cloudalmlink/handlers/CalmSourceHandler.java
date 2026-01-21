@@ -18,6 +18,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import com.consetto.adt.cloudalmlink.model.DemoDataProvider;
 import com.consetto.adt.cloudalmlink.model.VersionData;
 import com.consetto.adt.cloudalmlink.views.TransportView;
 import com.sap.adt.communication.message.HeadersFactory;
@@ -43,6 +44,20 @@ public class CalmSourceHandler extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+
+		// Check if demo mode is enabled
+		if (DemoDataProvider.isDemoModeEnabled()) {
+			IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+			try {
+				workbenchPage.showView("com.consetto.adt.cloudalmlink.views.TransportView");
+				TransportView transportView = (TransportView) workbenchPage
+						.findView("com.consetto.adt.cloudalmlink.views.TransportView");
+				transportView.setDemoData(DemoDataProvider.getDemoVersions());
+			} catch (PartInitException e) {
+				// View could not be opened - fail silently
+			}
+			return null;
+		}
 
 		// Get the active ADT editor and extract source information
 		IAdtFormEditor editor = (IAdtFormEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()

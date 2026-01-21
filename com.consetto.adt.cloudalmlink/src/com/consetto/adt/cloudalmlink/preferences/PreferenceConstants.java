@@ -16,4 +16,7 @@ public class PreferenceConstants {
 
 	/** Preference key for Cloud ALM Region */
 	public static final String P_REG = "apiRegionPreference";
+
+	/** Preference key for Demo Mode toggle */
+	public static final String P_DEMO = "demoModePreference";
 }
