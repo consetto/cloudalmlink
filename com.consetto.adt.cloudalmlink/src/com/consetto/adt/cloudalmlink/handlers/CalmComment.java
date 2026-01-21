@@ -12,7 +12,7 @@ import com.consetto.adt.cloudalmlink.preferences.PreferenceConstants;
 
 /**
  * Represents a Cloud ALM reference found in source code comments.
- * Supports features (6-NNNN) and tasks/requirements (3-NNNN).
+ * Supports features (6-NNNN), tasks/requirements (3-NNNN), documents (7-NNNN), and libraries (15-NNNN).
  * Opens the corresponding Cloud ALM page when clicked.
  */
 public class CalmComment implements IHyperlink {
@@ -56,6 +56,12 @@ public class CalmComment implements IHyperlink {
 		} else if (itemId.startsWith("3-")) {
 			// Task/Requirement
 			url = baseUrl + "/launchpad#task-management?sap-app-origin-hint=&/taskDetail/" + itemId;
+		} else if (itemId.startsWith("7-")) {
+			// Document
+			url = baseUrl + "/launchpad#DocumentationObject-manage?sap-ui-app-id-hint=com.sap.calm.imp.sd.docu.ui&/Documents('" + itemId + "')";
+		} else if (itemId.startsWith("15-")) {
+			// Library
+			url = baseUrl + "/launchpad#library-management?sap-ui-app-id-hint=com.sap.calm.imp.lib.ui&/LibraryElement('" + itemId + "')";
 		} else {
 			return;
 		}

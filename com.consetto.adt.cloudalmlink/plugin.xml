@@ -132,7 +132,7 @@
       <hyperlinkDetector
             activate="true"
             class="com.consetto.adt.cloudalmlink.handlers.CalmCommentScanner"
-            description="Opens Cloud ALM items from comment references (6-NNNN for features, 3-NNNN for tasks)"
+            description="Opens Cloud ALM items from comment references (3-NNNN for tasks, 6-NNNN for features, 7-NNNN for documents, 15-NNNN for libraries)"
             id="com.consetto.adt.cloudalmlink.handlers.CalmCommentScanner"
             name="Cloud ALM Links"
             targetId="org.eclipse.ui.DefaultTextEditor">
