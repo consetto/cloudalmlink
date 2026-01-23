@@ -40,6 +40,7 @@ public class DemoDataProvider {
 		VersionElement active = new VersionElement();
 		active.setID("Active");
 		active.setTransport("DEVK900042");
+		active.setAuthor("DEVELOPER1");
 		active.setTitle("Current working version");
 		FeatureElement activeFeature = new FeatureElement();
 		activeFeature.setDisplayId("6-1234");
@@ -53,6 +54,7 @@ public class DemoDataProvider {
 		VersionElement v1 = new VersionElement();
 		v1.setID("00001");
 		v1.setTransport("DEVK900041");
+		v1.setAuthor("DEVELOPER2");
 		v1.setTitle("Added infinite scroll to infinite meetings");
 		FeatureElement f1 = new FeatureElement();
 		f1.setDisplayId("6-1337");
@@ -66,6 +68,7 @@ public class DemoDataProvider {
 		VersionElement v2 = new VersionElement();
 		v2.setID("00002");
 		v2.setTransport("DEVK900040");
+		v2.setAuthor("DEVELOPER1");
 		v2.setTitle("Refactored spaghetti code to linguine");
 		FeatureElement f2 = new FeatureElement();
 		f2.setDisplayId("6-404");
@@ -79,6 +82,7 @@ public class DemoDataProvider {
 		VersionElement v3 = new VersionElement();
 		v3.setID("00003");
 		v3.setTransport("DEVK900039");
+		v3.setAuthor("DEVELOPER3");
 		v3.setTitle("Fixed bug that only appears on Fridays");
 		FeatureElement f3 = new FeatureElement();
 		f3.setDisplayId("6-42");
@@ -92,6 +96,7 @@ public class DemoDataProvider {
 		VersionElement v4 = new VersionElement();
 		v4.setID("00004");
 		v4.setTransport("DEVK900038");
+		v4.setAuthor("DEVELOPER2");
 		v4.setTitle("Works on my machine certified");
 		// No feature for this one
 		demoVersions.add(v4);

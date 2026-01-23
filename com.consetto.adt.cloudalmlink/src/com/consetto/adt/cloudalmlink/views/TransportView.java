@@ -22,6 +22,8 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -60,6 +62,7 @@ public class TransportView extends ViewPart {
 
 	private TableViewer viewer;
 	private Action showInBrowserAction;
+	private TransportFilter searchFilter;
 	private boolean isDemoMode = false;
 
 	@Override
@@ -72,6 +75,17 @@ public class TransportView extends ViewPart {
 
 		final Text searchText = new Text(parent, SWT.BORDER | SWT.SEARCH);
 		searchText.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL | GridData.HORIZONTAL_ALIGN_FILL));
+		searchText.setMessage("Filter by any column...");
+
+		// Initialize filter and connect to search field
+		searchFilter = new TransportFilter();
+		searchText.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				searchFilter.setSearchText(searchText.getText());
+				viewer.refresh();
+			}
+		});
 
 		createViewer(parent);
 	}
@@ -88,6 +102,8 @@ public class TransportView extends ViewPart {
 		table.setLinesVisible(true);
 
 		viewer.setContentProvider(new ArrayContentProvider());
+		viewer.setUseHashlookup(true);
+		viewer.addFilter(searchFilter);
 		viewer.setInput(VersionData.INSTANCE.getVersions());
 
 		// Make selection available to other views
@@ -116,8 +132,8 @@ public class TransportView extends ViewPart {
 	 * Creates table columns for version/feature display.
 	 */
 	private void createColumns(final Composite parent, final TableViewer viewer) {
-		String[] titles = { "ID", "Transport", "Title", "Feature", "Status", "Responsible" };
-		int[] bounds = { 100, 100, 180, 100, 100, 100 };
+		String[] titles = { "ID", "Transport", "TR Owner", "Title", "Feature", "Status", "Responsible" };
+		int[] bounds = { 80, 120, 100, 180, 100, 100, 100 };
 
 		// ID column
 		TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
@@ -139,8 +155,18 @@ public class TransportView extends ViewPart {
 			}
 		});
 
-		// Title column
+		// TR Owner column (Transport Owner)
 		col = createTableViewerColumn(titles[2], bounds[2], 2);
+		col.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				VersionElement v = (VersionElement) element;
+				return v.getAuthor() != null ? v.getAuthor() : "";
+			}
+		});
+
+		// Title column
+		col = createTableViewerColumn(titles[3], bounds[3], 3);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -150,7 +176,7 @@ public class TransportView extends ViewPart {
 		});
 
 		// Feature column
-		col = createTableViewerColumn(titles[3], bounds[3], 3);
+		col = createTableViewerColumn(titles[4], bounds[4], 4);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -160,7 +186,7 @@ public class TransportView extends ViewPart {
 		});
 
 		// Status column
-		col = createTableViewerColumn(titles[4], bounds[4], 4);
+		col = createTableViewerColumn(titles[5], bounds[5], 5);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -170,7 +196,7 @@ public class TransportView extends ViewPart {
 		});
 
 		// Responsible column
-		col = createTableViewerColumn(titles[5], bounds[5], 5);
+		col = createTableViewerColumn(titles[6], bounds[6], 6);
 		col.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
