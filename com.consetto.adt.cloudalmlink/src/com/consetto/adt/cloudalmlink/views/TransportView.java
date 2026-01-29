@@ -4,7 +4,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -14,17 +13,12 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -34,18 +28,18 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+import com.consetto.adt.cloudalmlink.model.CloudAlmConfig;
 import com.consetto.adt.cloudalmlink.model.DemoDataProvider;
 import com.consetto.adt.cloudalmlink.model.VersionData;
 import com.consetto.adt.cloudalmlink.model.VersionElement;
-import com.consetto.adt.cloudalmlink.preferences.PreferenceConstants;
+import com.consetto.adt.cloudalmlink.services.PreferenceService;
+import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
 
 import jakarta.inject.Inject;
 
@@ -95,7 +89,7 @@ public class TransportView extends ViewPart {
 	 */
 	private void createViewer(Composite parent) {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-		createColumns(parent, viewer);
+		createColumns();
 
 		final Table table = viewer.getTable();
 		table.setHeaderVisible(true);
@@ -104,7 +98,7 @@ public class TransportView extends ViewPart {
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setUseHashlookup(true);
 		viewer.addFilter(searchFilter);
-		viewer.setInput(VersionData.INSTANCE.getVersions());
+		viewer.setInput(VersionData.getInstance().getVersions());
 
 		// Make selection available to other views
 		getSite().setSelectionProvider(viewer);
@@ -129,121 +123,35 @@ public class TransportView extends ViewPart {
 	}
 
 	/**
-	 * Creates table columns for version/feature display.
+	 * Creates table columns using the declarative column definitions.
 	 */
-	private void createColumns(final Composite parent, final TableViewer viewer) {
-		String[] titles = { "ID", "Transport", "TR Owner", "Title", "Feature", "Status", "Responsible" };
-		int[] bounds = { 80, 120, 100, 180, 100, 100, 100 };
+	private void createColumns() {
+		List<TableColumnDefinition<VersionElement>> columns = TransportViewColumns.getColumns();
 
-		// ID column
-		TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
-		col.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				VersionElement v = (VersionElement) element;
-				return v.getID();
-			}
-		});
+		for (TableColumnDefinition<VersionElement> colDef : columns) {
+			TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
+			TableColumn column = viewerColumn.getColumn();
+			column.setText(colDef.title());
+			column.setWidth(colDef.width());
+			column.setResizable(true);
+			column.setMoveable(true);
 
-		// Transport column
-		col = createTableViewerColumn(titles[1], bounds[1], 1);
-		col.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				VersionElement v = (VersionElement) element;
-				return v.getTransportId();
-			}
-		});
-
-		// TR Owner column (Transport Owner)
-		col = createTableViewerColumn(titles[2], bounds[2], 2);
-		col.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				VersionElement v = (VersionElement) element;
-				return v.getAuthor() != null ? v.getAuthor() : "";
-			}
-		});
-
-		// Title column
-		col = createTableViewerColumn(titles[3], bounds[3], 3);
-		col.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				VersionElement v = (VersionElement) element;
-				return v.getTitle();
-			}
-		});
-
-		// Feature column
-		col = createTableViewerColumn(titles[4], bounds[4], 4);
-		col.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				VersionElement v = (VersionElement) element;
-				return v.getFeature() != null ? v.getFeature().getDisplayId() : "No Feature";
-			}
-		});
-
-		// Status column
-		col = createTableViewerColumn(titles[5], bounds[5], 5);
-		col.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				VersionElement v = (VersionElement) element;
-				return v.getFeature() != null ? v.getFeature().getStatus() : "No Feature";
-			}
-		});
-
-		// Responsible column
-		col = createTableViewerColumn(titles[6], bounds[6], 6);
-		col.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				VersionElement v = (VersionElement) element;
-				return v.getFeature() != null ? v.getFeature().getResponsibleId() : "No Feature";
-			}
-		});
-	}
-
-	private TableViewerColumn createTableViewerColumn(String title, int bound, final int colNumber) {
-		final TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
-		final TableColumn column = viewerColumn.getColumn();
-		column.setText(title);
-		column.setWidth(bound);
-		column.setResizable(true);
-		column.setMoveable(true);
-		return viewerColumn;
-	}
-
-	/**
-	 * Label provider for table cells with image support.
-	 */
-	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
-		@Override
-		public String getColumnText(Object obj, int index) {
-			return getText(obj);
-		}
-
-		@Override
-		public Image getColumnImage(Object obj, int index) {
-			return getImage(obj);
-		}
-
-		@Override
-		public Image getImage(Object obj) {
-			return workbench.getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
+			viewerColumn.setLabelProvider(new ColumnLabelProvider() {
+				@Override
+				public String getText(Object element) {
+					if (element instanceof VersionElement version) {
+						return colDef.getText(version);
+					}
+					return "";
+				}
+			});
 		}
 	}
 
 	private void hookContextMenu() {
 		MenuManager menuMgr = new MenuManager("#PopupMenu");
 		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(new IMenuListener() {
-			public void menuAboutToShow(IMenuManager manager) {
-				TransportView.this.fillContextMenu(manager);
-			}
-		});
+		menuMgr.addMenuListener(manager -> fillContextMenu(manager));
 		Menu menu = menuMgr.createContextMenu(viewer.getControl());
 		viewer.getControl().setMenu(menu);
 		getSite().registerContextMenu(menuMgr, viewer);
@@ -273,12 +181,13 @@ public class TransportView extends ViewPart {
 	 */
 	private void makeActions() {
 		showInBrowserAction = new Action() {
+			@Override
 			public void run() {
 				IStructuredSelection selection = viewer.getStructuredSelection();
 				Object obj = selection.getFirstElement();
 
-				if (obj instanceof VersionElement) {
-					VersionElement version = (VersionElement) obj;
+				// Use pattern matching for instanceof (Java 21)
+				if (obj instanceof VersionElement version) {
 					String featureId = version.getFeature() != null ? version.getFeature().getDisplayId() : null;
 
 					if (featureId != null) {
@@ -286,18 +195,15 @@ public class TransportView extends ViewPart {
 						if (isDemoMode) {
 							calmURL = DemoDataProvider.DEMO_CLOUD_ALM_URL;
 						} else {
-							ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
-									"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-							String region = scopedPreferenceStore.getString(PreferenceConstants.P_REG);
-							String tenant = scopedPreferenceStore.getString(PreferenceConstants.P_TEN);
-							String baseUrl = "https://" + tenant + "." + region + ".alm.cloud.sap";
-							calmURL = baseUrl + "/launchpad#feature-display?sap-ui-app-id-hint=com.sap.calm.imp.cdm.features.ui&/details/"
-									+ featureId;
+							// Use service layer for URL building
+							CloudAlmConfig config = PreferenceService.getInstance().getCloudAlmConfig();
+							calmURL = config.featureUrl(featureId);
 						}
 						try {
 							PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(calmURL));
 						} catch (PartInitException | MalformedURLException e) {
-							// Browser could not be opened - fail silently
+							CloudAlmLinkLogger.logError("Failed to open browser for URL: " + calmURL, e);
+							showMessage("Could not open browser. Please check the Error Log for details.");
 						}
 					} else {
 						showMessage("No Feature ID available for this transport.");
@@ -315,11 +221,7 @@ public class TransportView extends ViewPart {
 	 * Registers double-click listener to trigger the browser action.
 	 */
 	private void hookDoubleClickAction() {
-		viewer.addDoubleClickListener(new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				showInBrowserAction.run();
-			}
-		});
+		viewer.addDoubleClickListener(event -> showInBrowserAction.run());
 	}
 
 	private void showMessage(String message) {
@@ -329,6 +231,15 @@ public class TransportView extends ViewPart {
 	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
+	}
+
+	@Override
+	public void dispose() {
+		// Clean up resources
+		searchFilter = null;
+		viewer = null;
+		showInBrowserAction = null;
+		super.dispose();
 	}
 
 	/**

@@ -129,8 +129,9 @@ public class CalmSourceHandler extends AbstractHandler {
 					.getActiveWorkbenchWindow()
 					.getActivePage()
 					.getActiveEditor();
-			if (activeEditor instanceof IAdtFormEditor) {
-				return (IAdtFormEditor) activeEditor;
+			// Use pattern matching for instanceof (Java 21)
+			if (activeEditor instanceof IAdtFormEditor editor) {
+				return editor;
 			}
 		} catch (Exception e) {
 			// No active editor
@@ -230,16 +231,32 @@ public class CalmSourceHandler extends AbstractHandler {
 	private String resolveVersionUri(String adtBasePath, String versionsURL, AdtObjectContext context) {
 		// Primary approach: use extracted base path from links
 		if (adtBasePath != null) {
-			URI baseUri;
+			// Handle ./ relative paths by detecting and removing duplicate path segments
 			if (versionsURL.startsWith("./")) {
-				// ./ means relative to parent directory - don't add trailing slash
-				baseUri = URI.create(adtBasePath);
+				String relativePath = versionsURL.substring(2); // Remove "./"
+
+				// Check if the relative path duplicates the end of the base path
+				// e.g., base ends with "foo/bar" and relative is "foo/bar/versions"
+				int lastSlash = relativePath.lastIndexOf('/');
+				if (lastSlash > 0) {
+					String pathPrefix = relativePath.substring(0, lastSlash);
+					if (adtBasePath.endsWith(pathPrefix) || adtBasePath.endsWith("/" + pathPrefix)) {
+						// Duplicate detected - just append the unique suffix
+						String suffix = relativePath.substring(lastSlash);
+						return adtBasePath + suffix;
+					}
+				}
+
+				// No duplication - use standard resolution with normalize()
+				URI baseUri = URI.create(adtBasePath);
+				URI resolved = baseUri.resolve(versionsURL);
+				return resolved.normalize().getPath();
 			} else {
 				// No ./ prefix - add trailing slash so resolve appends to base path
-				baseUri = URI.create(adtBasePath.endsWith("/") ? adtBasePath : adtBasePath + "/");
+				URI baseUri = URI.create(adtBasePath.endsWith("/") ? adtBasePath : adtBasePath + "/");
+				URI resolved = baseUri.resolve(versionsURL);
+				return resolved.getPath();
 			}
-			URI resolved = baseUri.resolve(versionsURL);
-			return resolved.getPath();
 		}
 
 		// Secondary approach: use object URI from context

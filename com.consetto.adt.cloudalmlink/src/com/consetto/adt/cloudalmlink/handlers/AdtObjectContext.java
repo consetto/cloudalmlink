@@ -27,6 +27,7 @@ import com.sap.adt.project.ui.util.ProjectUtil;
 import com.sap.adt.tools.core.IAdtObjectReference;
 import com.sap.adt.tools.core.project.IAbapProject;
 import com.sap.adt.tools.core.ui.editors.IAdtFormEditor;
+import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
 
 /**
  * Encapsulates ADT object resolution from either editor or Project Explorer selection.
@@ -108,6 +109,7 @@ public class AdtObjectContext {
 
 			return context;
 		} catch (Exception e) {
+			CloudAlmLinkLogger.logWarning("Failed to create context from editor: " + e.getMessage());
 			return null;
 		}
 	}
@@ -120,11 +122,11 @@ public class AdtObjectContext {
 	 * @return The object context, or null if extraction failed
 	 */
 	public static AdtObjectContext fromSelection(ISelection selection) {
-		if (!(selection instanceof IStructuredSelection)) {
+		// Use pattern matching for instanceof (Java 21)
+		if (!(selection instanceof IStructuredSelection structuredSelection)) {
 			return null;
 		}
 
-		IStructuredSelection structuredSelection = (IStructuredSelection) selection;
 		if (structuredSelection.isEmpty()) {
 			return null;
 		}
@@ -144,13 +146,13 @@ public class AdtObjectContext {
 				return null;
 			}
 
-			// Get the selected ADT object reference
+			// Get the selected ADT object reference using pattern matching
 			Object selectedElement = structuredSelection.getFirstElement();
 			IAdtObjectReference adtObjectRef = null;
-			if (selectedElement instanceof IAdtObjectReference) {
-				adtObjectRef = (IAdtObjectReference) selectedElement;
-			} else if (selectedElement instanceof IAdaptable) {
-				adtObjectRef = ((IAdaptable) selectedElement).getAdapter(IAdtObjectReference.class);
+			if (selectedElement instanceof IAdtObjectReference ref) {
+				adtObjectRef = ref;
+			} else if (selectedElement instanceof IAdaptable adaptable) {
+				adtObjectRef = adaptable.getAdapter(IAdtObjectReference.class);
 			}
 
 			if (adtObjectRef == null) {
@@ -171,6 +173,7 @@ public class AdtObjectContext {
 
 			return context;
 		} catch (Exception e) {
+			CloudAlmLinkLogger.logWarning("Failed to create context from selection: " + e.getMessage());
 			return null;
 		}
 	}
@@ -196,15 +199,17 @@ public class AdtObjectContext {
 
 			IMessageBody body = resource.get(null, headers, IMessageBody.class);
 			if (body != null) {
-				InputStream content = body.getContent();
-				byte[] bytes = content.readAllBytes();
-				String response = new String(bytes, StandardCharsets.UTF_8);
+				// Use try-with-resources to ensure InputStream is properly closed
+				try (InputStream content = body.getContent()) {
+					byte[] bytes = content.readAllBytes();
+					String response = new String(bytes, StandardCharsets.UTF_8);
 
-				// Parse atom links from XML response
-				links = parseAtomLinks(response);
+					// Parse atom links from XML response
+					links = parseAtomLinks(response);
+				}
 			}
 		} catch (Exception e) {
-			// Failed to fetch atom links - return empty list
+			CloudAlmLinkLogger.logWarning("Failed to fetch atom links for " + objectUri + ": " + e.getMessage());
 		}
 
 		return links;
