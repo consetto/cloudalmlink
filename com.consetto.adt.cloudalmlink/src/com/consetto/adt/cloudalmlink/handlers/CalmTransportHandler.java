@@ -6,17 +6,18 @@ import java.net.URL;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
-import com.consetto.adt.cloudalmlink.model.VersionElement;
-import com.consetto.adt.cloudalmlink.preferences.PreferenceConstants;
+import com.consetto.adt.cloudalmlink.model.CloudAlmConfig;
+import com.consetto.adt.cloudalmlink.model.FeatureElement;
+import com.consetto.adt.cloudalmlink.services.ICloudAlmApiService;
+import com.consetto.adt.cloudalmlink.services.PreferenceService;
+import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
 import com.sap.adt.tm.impl.Request;
 
 /**
@@ -25,17 +26,19 @@ import com.sap.adt.tm.impl.Request;
  */
 public class CalmTransportHandler extends AbstractHandler {
 
-	private CalmApiHandler calmApiHandler = new CalmApiHandler();
+	private ICloudAlmApiService apiService;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
-				"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-		String region = scopedPreferenceStore.getString(PreferenceConstants.P_REG);
-		String tenant = scopedPreferenceStore.getString(PreferenceConstants.P_TEN);
+		// Get configuration using service layer
+		CloudAlmConfig config = PreferenceService.getInstance().getCloudAlmConfig();
 
-		// Build Cloud ALM base URL from tenant and region preferences
-		String baseUrl = "https://" + tenant + "." + region + ".alm.cloud.sap";
+		if (!config.hasConnectionSettings()) {
+			IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+			MessageDialog.openWarning(window.getShell(), "Cloud ALM Link",
+					"Cloud ALM connection is not configured. Please configure tenant and region in preferences.");
+			return null;
+		}
 
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		ITreeSelection selection = (ITreeSelection) window.getSelectionService().getSelection();
@@ -43,24 +46,24 @@ public class CalmTransportHandler extends AbstractHandler {
 		if (selection.size() == 1) {
 			Object selObject = selection.getFirstElement();
 
-			if (selObject instanceof com.sap.adt.tm.impl.Request) {
-				Request req = (Request) selObject;
+			if (selObject instanceof Request req) {
 				String transportId = req.getNumber();
-				String feature = getFeatureFromApi(transportId);
+				String featureId = getFeatureFromApi(transportId);
 
 				// Fall back to description parsing if API lookup fails
-				if (feature == null) {
-					feature = getFeatureFromDescription(req.getDesc());
+				if (featureId == null) {
+					featureId = getFeatureFromDescription(req.getDesc());
 				}
 
-				if (feature != null) {
-					// Construct Cloud ALM feature URL and open in external browser
-					String calmURL = baseUrl + "/launchpad#feature-display?sap-ui-app-id-hint=com.sap.calm.imp.cdm.features.ui&/details/"
-							+ feature;
+				if (featureId != null) {
+					// Use centralized URL building from CloudAlmConfig
+					String calmURL = config.featureUrl(featureId);
 					try {
 						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(calmURL));
 					} catch (PartInitException | MalformedURLException e) {
-						// Browser could not be opened - fail silently
+						CloudAlmLinkLogger.logError("Failed to open browser for URL: " + calmURL, e);
+						MessageDialog.openError(window.getShell(), "Cloud ALM Link",
+								"Could not open browser. Please check the Error Log for details.");
 					}
 				} else {
 					MessageDialog.openInformation(window.getShell(), "Cloud ALM Link",
@@ -70,6 +73,18 @@ public class CalmTransportHandler extends AbstractHandler {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Gets or creates the API service instance.
+	 *
+	 * @return The Cloud ALM API service
+	 */
+	private ICloudAlmApiService getApiService() {
+		if (apiService == null) {
+			apiService = new CalmApiHandler();
+		}
+		return apiService;
 	}
 
 	/**
@@ -83,11 +98,9 @@ public class CalmTransportHandler extends AbstractHandler {
 			return null;
 		}
 
-		VersionElement version = new VersionElement();
-		calmApiHandler.getFeature(transportId, version);
-
-		if (version.getFeature() != null) {
-			return version.getFeature().getDisplayId();
+		FeatureElement feature = getApiService().getFeature(transportId);
+		if (feature != null) {
+			return feature.getDisplayId();
 		}
 		return null;
 	}
@@ -96,6 +109,7 @@ public class CalmTransportHandler extends AbstractHandler {
 	 * Extracts the Cloud ALM feature ID from a transport description.
 	 * Feature IDs follow the pattern "6-NNNN" (e.g., "6-123").
 	 * (Fallback method if API lookup fails.)
+	 *
 	 * @param descr The transport request description
 	 * @return The feature ID if found and valid, null otherwise
 	 */
@@ -111,5 +125,14 @@ public class CalmTransportHandler extends AbstractHandler {
 			return feature;
 		}
 		return null;
+	}
+
+	@Override
+	public void dispose() {
+		if (apiService != null) {
+			apiService.close();
+			apiService = null;
+		}
+		super.dispose();
 	}
 }

@@ -27,11 +27,10 @@ public class TransportFilter extends ViewerFilter {
 			return true;
 		}
 
-		if (!(element instanceof VersionElement)) {
+		// Use pattern matching for instanceof (Java 21)
+		if (!(element instanceof VersionElement v)) {
 			return false;
 		}
-
-		VersionElement v = (VersionElement) element;
 
 		// Match against version/transport fields
 		if (matches(v.getID())) return true;
