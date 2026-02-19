@@ -57,7 +57,7 @@ public final class TransportViewColumns {
 				),
 				new TableColumnDefinition<>(
 						"Status",
-						100,
+						150,
 						v -> v.getFeature() != null ? v.getFeature().getStatus() : "No Feature",
 						Comparator.comparing(
 								v -> v.getFeature() != null ? v.getFeature().getStatus() : "",
