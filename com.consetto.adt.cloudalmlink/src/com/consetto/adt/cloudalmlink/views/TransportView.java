@@ -249,7 +249,7 @@ public class TransportView extends ViewPart {
 	 */
 	public void setVersionData(VersionData versions) {
 		isDemoMode = false;
-		viewer.setInput(versions.getVersions());
+		viewer.setInput(versions != null ? versions.getVersions() : java.util.Collections.emptyList());
 	}
 
 	/**

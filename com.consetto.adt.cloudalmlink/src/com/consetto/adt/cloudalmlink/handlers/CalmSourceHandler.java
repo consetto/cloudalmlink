@@ -57,6 +57,7 @@ public class CalmSourceHandler extends AbstractHandler {
 		if (context == null) {
 			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
 					"Could not determine ABAP object from editor or selection");
+			showTransportView(event, null);
 			return null;
 		}
 
@@ -65,6 +66,7 @@ public class CalmSourceHandler extends AbstractHandler {
 		if (urls.versionsURL == null) {
 			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
 					"Could not find versions URL for this object");
+			showTransportView(event, null);
 			return null;
 		}
 
