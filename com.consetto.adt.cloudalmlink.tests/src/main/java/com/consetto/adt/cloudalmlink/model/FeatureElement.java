@@ -9,6 +9,18 @@ import java.util.Map;
  */
 public class FeatureElement {
 
+	/** Represents an expanded navigation property (e.g., toWorkstream, toScope, toRelease). */
+	public static class ExpandedEntity {
+		private String uuid;
+		private String name;
+
+		public String getUuid() { return uuid; }
+		public String getName() { return name; }
+
+		public void setUuid(String uuid) { this.uuid = uuid; }
+		public void setName(String name) { this.name = name; }
+	}
+
 	/** Maps technical status codes to Cloud ALM Frontend display labels. */
 	private static final Map<String, String> STATUS_DISPLAY_MAP = Map.of(
 			"CREATED", "In Specification",
@@ -18,6 +30,11 @@ public class FeatureElement {
 			"SUCCESSFULLY_TESTED", "Successfully Tested",
 			"APPROVED_FOR_DEPLOYMENT", "Ready for Production",
 			"CONFIRMED", "Deployed"
+	);
+
+	/** Maps priority codes to display labels. */
+	private static final Map<Integer, String> PRIORITY_DISPLAY_MAP = Map.of(
+			10, "Very High", 20, "High", 30, "Medium", 40, "Low"
 	);
 
 	private String uuid;
@@ -33,6 +50,10 @@ public class FeatureElement {
 	private String responsibleId;
 	private String releaseId;
 	private String workstreamId;
+
+	private ExpandedEntity toWorkstream;
+	private ExpandedEntity toScope;
+	private ExpandedEntity toRelease;
 
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
@@ -86,6 +107,20 @@ public class FeatureElement {
 		this.workstreamId = workstreamId;
 	}
 
+	public void setToWorkstream(ExpandedEntity toWorkstream) {
+		this.toWorkstream = toWorkstream;
+	}
+
+	public void setToScope(ExpandedEntity toScope) {
+		this.toScope = toScope;
+	}
+
+	public void setToRelease(ExpandedEntity toRelease) {
+		this.toRelease = toRelease;
+	}
+
+	// --- Getters ---
+
 	public String getUuid() {
 		return uuid;
 	}
@@ -98,16 +133,8 @@ public class FeatureElement {
 		return title;
 	}
 
-	public String getStatus() {
-		return STATUS_DISPLAY_MAP.getOrDefault(statusCode, statusCode);
-	}
-
 	public String getProjectId() {
 		return projectId;
-	}
-
-	public String getResponsibleId() {
-		return responsibleId;
 	}
 
 	public String getDescription() {
@@ -130,11 +157,50 @@ public class FeatureElement {
 		return type;
 	}
 
+	public String getResponsibleId() {
+		return responsibleId;
+	}
+
 	public String getReleaseId() {
 		return releaseId;
 	}
 
 	public String getWorkstreamId() {
 		return workstreamId;
+	}
+
+	public String getStatus() {
+		if (statusCode == null) {
+			return null;
+		}
+		return STATUS_DISPLAY_MAP.getOrDefault(statusCode, statusCode);
+	}
+
+	/** Returns priority display text (e.g., "Very High", "High", "Medium", "Low"). */
+	public String getPriority() {
+		return PRIORITY_DISPLAY_MAP.getOrDefault(priorityCode, "");
+	}
+
+	/** Returns the modified date as YYYY-MM-DD, or empty string if not set. */
+	public String getModifiedDate() {
+		if (modifiedAt == null || modifiedAt.length() < 10) {
+			return "";
+		}
+		return modifiedAt.substring(0, 10);
+	}
+
+	/** Returns the workstream name from expanded entity, or empty string. */
+	public String getWorkstreamName() {
+		return toWorkstream != null ? toWorkstream.getName() : "";
+	}
+
+	/** Returns the scope name from expanded entity, or empty string. */
+	public String getScopeName() {
+		return toScope != null ? toScope.getName() : "";
+	}
+
+	/** Returns the release name from expanded entity, or empty string. */
+	public String getReleaseName() {
+		return toRelease != null ? toRelease.getName() : "";
 	}
 }

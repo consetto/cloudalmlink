@@ -36,6 +36,22 @@ class TransportFilterTest {
 		feature.setDisplayId("6-1234");
 		feature.setStatusCode("IN_PROGRESS");
 		feature.setResponsibleId("PRODUCT_OWNER");
+		feature.setTitle("Payment Gateway Integration");
+		feature.setPriorityCode(20);
+		feature.setModifiedAt("2025-06-15T09:30:00Z");
+
+		FeatureElement.ExpandedEntity workstream = new FeatureElement.ExpandedEntity();
+		workstream.setName("Payment Services");
+		feature.setToWorkstream(workstream);
+
+		FeatureElement.ExpandedEntity scope = new FeatureElement.ExpandedEntity();
+		scope.setName("Backend Fixes");
+		feature.setToScope(scope);
+
+		FeatureElement.ExpandedEntity release = new FeatureElement.ExpandedEntity();
+		release.setName("2025-Q3");
+		feature.setToRelease(release);
+
 		versionWithFeature.setFeature(feature);
 
 		// Create version without feature
@@ -163,6 +179,60 @@ class TransportFilterTest {
 		@DisplayName("should match by feature responsible ID")
 		void shouldMatchByFeatureResponsibleId() {
 			filter.setSearchText("PRODUCT_OWNER");
+
+			assertThat(filter.select(versionWithFeature)).isTrue();
+			assertThat(filter.select(versionWithoutFeature)).isFalse();
+		}
+
+		@Test
+		@DisplayName("should match by feature title")
+		void shouldMatchByFeatureTitle() {
+			filter.setSearchText("Integration");
+
+			assertThat(filter.select(versionWithFeature)).isTrue();
+			assertThat(filter.select(versionWithoutFeature)).isFalse();
+		}
+
+		@Test
+		@DisplayName("should match by priority display text")
+		void shouldMatchByPriority() {
+			filter.setSearchText("High");
+
+			assertThat(filter.select(versionWithFeature)).isTrue();
+			assertThat(filter.select(versionWithoutFeature)).isFalse();
+		}
+
+		@Test
+		@DisplayName("should match by workstream name")
+		void shouldMatchByWorkstreamName() {
+			filter.setSearchText("Payment Services");
+
+			assertThat(filter.select(versionWithFeature)).isTrue();
+			assertThat(filter.select(versionWithoutFeature)).isFalse();
+		}
+
+		@Test
+		@DisplayName("should match by scope name")
+		void shouldMatchByScopeName() {
+			filter.setSearchText("Backend Fixes");
+
+			assertThat(filter.select(versionWithFeature)).isTrue();
+			assertThat(filter.select(versionWithoutFeature)).isFalse();
+		}
+
+		@Test
+		@DisplayName("should match by release name")
+		void shouldMatchByReleaseName() {
+			filter.setSearchText("2025-Q3");
+
+			assertThat(filter.select(versionWithFeature)).isTrue();
+			assertThat(filter.select(versionWithoutFeature)).isFalse();
+		}
+
+		@Test
+		@DisplayName("should match by modified date")
+		void shouldMatchByModifiedDate() {
+			filter.setSearchText("2025-06-15");
 
 			assertThat(filter.select(versionWithFeature)).isTrue();
 			assertThat(filter.select(versionWithoutFeature)).isFalse();

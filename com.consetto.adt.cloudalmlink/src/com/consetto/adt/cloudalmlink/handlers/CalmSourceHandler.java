@@ -484,7 +484,8 @@ public class CalmSourceHandler extends AbstractHandler {
 					ctsUri, destination);
 
 			IHeaders ctsHeader = HeadersFactory.newHeaders();
-			IField ctsAcceptField = HeadersFactory.newField("Accept", "application/vnd.sap.as+xml");
+			IField ctsAcceptField = HeadersFactory.newField("Accept",
+					"application/vnd.sap.adt.transportorganizer.v1+xml");
 			ctsHeader.setField(ctsAcceptField);
 
 			IMessageBody ctsBody = ctsResource.get(null, ctsHeader, IMessageBody.class);

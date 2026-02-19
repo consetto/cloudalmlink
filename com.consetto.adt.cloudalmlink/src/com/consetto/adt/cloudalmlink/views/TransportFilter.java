@@ -21,8 +21,27 @@ public class TransportFilter extends ViewerFilter {
 		this.searchString = (s == null ? "" : s.toLowerCase().trim());
 	}
 
+	/**
+	 * Returns the current search text.
+	 *
+	 * @return The search string
+	 */
+	public String getSearchText() {
+		return searchString;
+	}
+
 	@Override
 	public boolean select(Viewer viewer, Object parentElement, Object element) {
+		return select(element);
+	}
+
+	/**
+	 * Convenience method for filtering a single element.
+	 *
+	 * @param element The element to test
+	 * @return true if the element matches the search text
+	 */
+	public boolean select(Object element) {
 		if (searchString.isEmpty()) {
 			return true;
 		}
@@ -43,6 +62,12 @@ public class TransportFilter extends ViewerFilter {
 			if (matches(v.getFeature().getDisplayId())) return true;
 			if (matches(v.getFeature().getStatus())) return true;
 			if (matches(v.getFeature().getResponsibleId())) return true;
+			if (matches(v.getFeature().getTitle())) return true;
+			if (matches(v.getFeature().getPriority())) return true;
+			if (matches(v.getFeature().getWorkstreamName())) return true;
+			if (matches(v.getFeature().getScopeName())) return true;
+			if (matches(v.getFeature().getReleaseName())) return true;
+			if (matches(v.getFeature().getModifiedDate())) return true;
 		}
 
 		return false;

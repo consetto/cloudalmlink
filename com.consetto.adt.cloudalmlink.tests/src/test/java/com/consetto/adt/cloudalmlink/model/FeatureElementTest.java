@@ -126,7 +126,135 @@ class FeatureElementTest {
 		}
 	}
 
-@Nested
+	@Nested
+	@DisplayName("Priority Display")
+	class PriorityDisplay {
+
+		@Test
+		@DisplayName("should map priority 10 to Very High")
+		void shouldMapPriority10ToVeryHigh() {
+			feature.setPriorityCode(10);
+			assertThat(feature.getPriority()).isEqualTo("Very High");
+		}
+
+		@Test
+		@DisplayName("should map priority 20 to High")
+		void shouldMapPriority20ToHigh() {
+			feature.setPriorityCode(20);
+			assertThat(feature.getPriority()).isEqualTo("High");
+		}
+
+		@Test
+		@DisplayName("should map priority 30 to Medium")
+		void shouldMapPriority30ToMedium() {
+			feature.setPriorityCode(30);
+			assertThat(feature.getPriority()).isEqualTo("Medium");
+		}
+
+		@Test
+		@DisplayName("should map priority 40 to Low")
+		void shouldMapPriority40ToLow() {
+			feature.setPriorityCode(40);
+			assertThat(feature.getPriority()).isEqualTo("Low");
+		}
+
+		@Test
+		@DisplayName("should return empty string for unknown priority")
+		void shouldReturnEmptyForUnknownPriority() {
+			feature.setPriorityCode(99);
+			assertThat(feature.getPriority()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("should return empty string for default priority (0)")
+		void shouldReturnEmptyForDefaultPriority() {
+			assertThat(feature.getPriority()).isEmpty();
+		}
+	}
+
+	@Nested
+	@DisplayName("Modified Date")
+	class ModifiedDate {
+
+		@Test
+		@DisplayName("should extract date from ISO timestamp")
+		void shouldExtractDateFromIsoTimestamp() {
+			feature.setModifiedAt("2025-06-15T09:30:00Z");
+			assertThat(feature.getModifiedDate()).isEqualTo("2025-06-15");
+		}
+
+		@Test
+		@DisplayName("should return empty string when modifiedAt is null")
+		void shouldReturnEmptyWhenNull() {
+			assertThat(feature.getModifiedDate()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("should return empty string when modifiedAt is too short")
+		void shouldReturnEmptyWhenTooShort() {
+			feature.setModifiedAt("2025");
+			assertThat(feature.getModifiedDate()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("should handle date-only string")
+		void shouldHandleDateOnlyString() {
+			feature.setModifiedAt("2025-01-20");
+			assertThat(feature.getModifiedDate()).isEqualTo("2025-01-20");
+		}
+	}
+
+	@Nested
+	@DisplayName("Expanded Entity Names")
+	class ExpandedEntityNames {
+
+		@Test
+		@DisplayName("should return workstream name when set")
+		void shouldReturnWorkstreamName() {
+			FeatureElement.ExpandedEntity ws = new FeatureElement.ExpandedEntity();
+			ws.setName("Cafeteria Services");
+			feature.setToWorkstream(ws);
+			assertThat(feature.getWorkstreamName()).isEqualTo("Cafeteria Services");
+		}
+
+		@Test
+		@DisplayName("should return empty string when workstream is null")
+		void shouldReturnEmptyWhenWorkstreamNull() {
+			assertThat(feature.getWorkstreamName()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("should return scope name when set")
+		void shouldReturnScopeName() {
+			FeatureElement.ExpandedEntity scope = new FeatureElement.ExpandedEntity();
+			scope.setName("Backend Fixes");
+			feature.setToScope(scope);
+			assertThat(feature.getScopeName()).isEqualTo("Backend Fixes");
+		}
+
+		@Test
+		@DisplayName("should return empty string when scope is null")
+		void shouldReturnEmptyWhenScopeNull() {
+			assertThat(feature.getScopeName()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("should return release name when set")
+		void shouldReturnReleaseName() {
+			FeatureElement.ExpandedEntity release = new FeatureElement.ExpandedEntity();
+			release.setName("2025-Q3");
+			feature.setToRelease(release);
+			assertThat(feature.getReleaseName()).isEqualTo("2025-Q3");
+		}
+
+		@Test
+		@DisplayName("should return empty string when release is null")
+		void shouldReturnEmptyWhenReleaseNull() {
+			assertThat(feature.getReleaseName()).isEmpty();
+		}
+	}
+
+	@Nested
 	@DisplayName("Display ID Formats")
 	class DisplayIdFormats {
 
@@ -243,6 +371,61 @@ class FeatureElementTest {
 			assertThat(deserializedFeature.getResponsibleId()).isEqualTo("BUG_WHISPERER");
 			assertThat(deserializedFeature.getReleaseId()).isEqualTo("2024-Q1");
 			assertThat(deserializedFeature.getWorkstreamId()).isEqualTo("WS-DEV");
+		}
+
+		@Test
+		@DisplayName("should deserialize expanded entities from $expand response")
+		void shouldDeserializeExpandedEntities() {
+			String json = """
+				{
+					"uuid": "feature-uuid-002",
+					"displayId": "6-5678",
+					"title": "Feature with expanded entities",
+					"statusCode": "IN_REALIZATION",
+					"priorityCode": 20,
+					"modifiedAt": "2025-06-15T09:30:00Z",
+					"toWorkstream": {
+						"uuid": "ws-uuid-001",
+						"name": "Developer Productivity"
+					},
+					"toScope": {
+						"uuid": "scope-uuid-001",
+						"name": "New Features"
+					},
+					"toRelease": {
+						"uuid": "rel-uuid-001",
+						"name": "2025-Q3"
+					}
+				}
+				""";
+
+			FeatureElement deserializedFeature = gson.fromJson(json, FeatureElement.class);
+
+			assertThat(deserializedFeature.getDisplayId()).isEqualTo("6-5678");
+			assertThat(deserializedFeature.getPriority()).isEqualTo("High");
+			assertThat(deserializedFeature.getModifiedDate()).isEqualTo("2025-06-15");
+			assertThat(deserializedFeature.getWorkstreamName()).isEqualTo("Developer Productivity");
+			assertThat(deserializedFeature.getScopeName()).isEqualTo("New Features");
+			assertThat(deserializedFeature.getReleaseName()).isEqualTo("2025-Q3");
+		}
+
+		@Test
+		@DisplayName("should handle JSON without expanded entities")
+		void shouldHandleJsonWithoutExpandedEntities() {
+			String json = """
+				{
+					"displayId": "6-9999",
+					"title": "No expansions",
+					"priorityCode": 30
+				}
+				""";
+
+			FeatureElement deserializedFeature = gson.fromJson(json, FeatureElement.class);
+
+			assertThat(deserializedFeature.getWorkstreamName()).isEmpty();
+			assertThat(deserializedFeature.getScopeName()).isEmpty();
+			assertThat(deserializedFeature.getReleaseName()).isEmpty();
+			assertThat(deserializedFeature.getPriority()).isEqualTo("Medium");
 		}
 	}
 }
