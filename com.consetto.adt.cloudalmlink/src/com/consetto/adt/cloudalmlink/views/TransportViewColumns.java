@@ -56,6 +56,15 @@ public final class TransportViewColumns {
 						)
 				),
 				new TableColumnDefinition<>(
+						"Feature Title",
+						200,
+						v -> v.getFeature() != null ? v.getFeature().getTitle() : "No Feature",
+						Comparator.comparing(
+								v -> v.getFeature() != null ? v.getFeature().getTitle() : "",
+								Comparator.nullsLast(Comparator.naturalOrder())
+						)
+				),
+				new TableColumnDefinition<>(
 						"Status",
 						150,
 						v -> v.getFeature() != null ? v.getFeature().getStatus() : "No Feature",
@@ -70,6 +79,51 @@ public final class TransportViewColumns {
 						v -> v.getFeature() != null ? v.getFeature().getResponsibleId() : "No Feature",
 						Comparator.comparing(
 								v -> v.getFeature() != null ? v.getFeature().getResponsibleId() : "",
+								Comparator.nullsLast(Comparator.naturalOrder())
+						)
+				),
+				new TableColumnDefinition<>(
+						"Workstream",
+						120,
+						v -> v.getFeature() != null ? v.getFeature().getWorkstreamName() : "No Feature",
+						Comparator.comparing(
+								v -> v.getFeature() != null ? v.getFeature().getWorkstreamName() : "",
+								Comparator.nullsLast(Comparator.naturalOrder())
+						)
+				),
+				new TableColumnDefinition<>(
+						"Priority",
+						100,
+						v -> v.getFeature() != null ? v.getFeature().getPriority() : "No Feature",
+						Comparator.comparing(
+								v -> v.getFeature() != null ? v.getFeature().getPriority() : "",
+								Comparator.nullsLast(Comparator.naturalOrder())
+						)
+				),
+				new TableColumnDefinition<>(
+						"Scope",
+						120,
+						v -> v.getFeature() != null ? v.getFeature().getScopeName() : "No Feature",
+						Comparator.comparing(
+								v -> v.getFeature() != null ? v.getFeature().getScopeName() : "",
+								Comparator.nullsLast(Comparator.naturalOrder())
+						)
+				),
+				new TableColumnDefinition<>(
+						"Release",
+						120,
+						v -> v.getFeature() != null ? v.getFeature().getReleaseName() : "No Feature",
+						Comparator.comparing(
+								v -> v.getFeature() != null ? v.getFeature().getReleaseName() : "",
+								Comparator.nullsLast(Comparator.naturalOrder())
+						)
+				),
+				new TableColumnDefinition<>(
+						"Modified",
+						100,
+						v -> v.getFeature() != null ? v.getFeature().getModifiedDate() : "No Feature",
+						Comparator.comparing(
+								v -> v.getFeature() != null ? v.getFeature().getModifiedDate() : "",
 								Comparator.nullsLast(Comparator.naturalOrder())
 						)
 				)

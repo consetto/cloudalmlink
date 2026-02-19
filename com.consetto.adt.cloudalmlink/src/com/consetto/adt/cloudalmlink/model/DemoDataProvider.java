@@ -47,6 +47,11 @@ public class DemoDataProvider {
 		activeFeature.setTitle("Fix the coffee machine API");
 		activeFeature.setStatusCode("IN_REALIZATION");
 		activeFeature.setResponsibleId("ABAP_JOE");
+		activeFeature.setPriorityCode(10);
+		activeFeature.setModifiedAt("2025-06-15T09:30:00Z");
+		activeFeature.setToWorkstream(createExpandedEntity("Cafeteria Services"));
+		activeFeature.setToScope(createExpandedEntity("Backend Fixes"));
+		activeFeature.setToRelease(createExpandedEntity("2025-Q3"));
 		active.setFeature(activeFeature);
 		demoVersions.add(active);
 
@@ -61,6 +66,11 @@ public class DemoDataProvider {
 		f1.setTitle("Implement Rubber Duck Debugging Module");
 		f1.setStatusCode("APPROVED_FOR_DEPLOYMENT");
 		f1.setResponsibleId("DEBUG_DUCK");
+		f1.setPriorityCode(20);
+		f1.setModifiedAt("2025-05-20T14:00:00Z");
+		f1.setToWorkstream(createExpandedEntity("Developer Productivity"));
+		f1.setToScope(createExpandedEntity("New Features"));
+		f1.setToRelease(createExpandedEntity("2025-Q2"));
 		v1.setFeature(f1);
 		demoVersions.add(v1);
 
@@ -75,6 +85,11 @@ public class DemoDataProvider {
 		f2.setTitle("Feature Not Found - But We Fixed It");
 		f2.setStatusCode("CONFIRMED");
 		f2.setResponsibleId("BUG_WHISPERER");
+		f2.setPriorityCode(30);
+		f2.setModifiedAt("2025-04-10T11:15:00Z");
+		f2.setToWorkstream(createExpandedEntity("Code Quality"));
+		f2.setToScope(createExpandedEntity("Refactoring"));
+		f2.setToRelease(createExpandedEntity("2025-Q1"));
 		v2.setFeature(f2);
 		demoVersions.add(v2);
 
@@ -89,6 +104,11 @@ public class DemoDataProvider {
 		f3.setTitle("The Answer to Life, Universe, and This Bug");
 		f3.setStatusCode("IN_TESTING");
 		f3.setResponsibleId("DEEP_THOUGHT");
+		f3.setPriorityCode(40);
+		f3.setModifiedAt("2025-03-28T16:45:00Z");
+		f3.setToWorkstream(createExpandedEntity("Temporal Anomalies"));
+		f3.setToScope(createExpandedEntity("Bug Fixes"));
+		f3.setToRelease(createExpandedEntity("2025-Q2"));
 		v3.setFeature(f3);
 		demoVersions.add(v3);
 
@@ -102,5 +122,11 @@ public class DemoDataProvider {
 		demoVersions.add(v4);
 
 		return demoVersions;
+	}
+
+	private static FeatureElement.ExpandedEntity createExpandedEntity(String name) {
+		FeatureElement.ExpandedEntity entity = new FeatureElement.ExpandedEntity();
+		entity.setName(name);
+		return entity;
 	}
 }
