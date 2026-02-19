@@ -457,4 +457,96 @@ class PatternUtilsTest {
 			assertThat(ids).isEmpty();
 		}
 	}
+
+	@Nested
+	@DisplayName("extractParentTransport")
+	class ExtractParentTransport {
+
+		@Test
+		@DisplayName("should extract parent transport from task XML")
+		void shouldExtractParentFromTaskXml() {
+			String xml = """
+				<?xml version="1.0" encoding="utf-8"?>
+				<tm:root xmlns:tm="http://www.sap.com/adt/cts/transportrequests">
+				  <tm:workbench tm:number="NPLK900042" tm:owner="DEVELOPER" tm:type="K">
+				    <tm:task tm:number="NPLK900043" tm:parent="NPLK900042" tm:owner="DEVELOPER" tm:type="development"/>
+				  </tm:workbench>
+				</tm:root>
+				""";
+
+			String result = PatternUtils.extractParentTransport(xml, "NPLK900043");
+
+			assertThat(result).isEqualTo("NPLK900042");
+		}
+
+		@Test
+		@DisplayName("should return null when transport is a request, not a task")
+		void shouldReturnNullWhenTransportIsRequest() {
+			String xml = """
+				<?xml version="1.0" encoding="utf-8"?>
+				<tm:root xmlns:tm="http://www.sap.com/adt/cts/transportrequests">
+				  <tm:workbench tm:number="NPLK900042" tm:owner="DEVELOPER" tm:type="K">
+				    <tm:task tm:number="NPLK900043" tm:parent="NPLK900042" tm:owner="DEVELOPER" tm:type="development"/>
+				  </tm:workbench>
+				</tm:root>
+				""";
+
+			String result = PatternUtils.extractParentTransport(xml, "NPLK900042");
+
+			assertThat(result).isNull();
+		}
+
+		@Test
+		@DisplayName("should return null when tm:parent is empty")
+		void shouldReturnNullWhenParentIsEmpty() {
+			String xml = """
+				<tm:root xmlns:tm="http://www.sap.com/adt/cts/transportrequests">
+				  <tm:task tm:number="NPLK900043" tm:parent="" tm:owner="DEVELOPER"/>
+				</tm:root>
+				""";
+
+			String result = PatternUtils.extractParentTransport(xml, "NPLK900043");
+
+			assertThat(result).isNull();
+		}
+
+		@Test
+		@DisplayName("should return null for null inputs")
+		void shouldReturnNullForNullInputs() {
+			assertThat(PatternUtils.extractParentTransport(null, "NPLK900043")).isNull();
+			assertThat(PatternUtils.extractParentTransport("<xml/>", null)).isNull();
+			assertThat(PatternUtils.extractParentTransport(null, null)).isNull();
+		}
+
+		@Test
+		@DisplayName("should handle attribute ordering variations")
+		void shouldHandleAttributeOrderingVariations() {
+			String xml = """
+				<tm:root xmlns:tm="http://www.sap.com/adt/cts/transportrequests">
+				  <tm:task tm:parent="NPLK900042" tm:type="development" tm:number="NPLK900043" tm:owner="DEVELOPER"/>
+				</tm:root>
+				""";
+
+			String result = PatternUtils.extractParentTransport(xml, "NPLK900043");
+
+			assertThat(result).isEqualTo("NPLK900042");
+		}
+
+		@Test
+		@DisplayName("should match correct task when multiple tasks exist")
+		void shouldMatchCorrectTaskAmongMultiple() {
+			String xml = """
+				<tm:root xmlns:tm="http://www.sap.com/adt/cts/transportrequests">
+				  <tm:workbench tm:number="NPLK900042" tm:owner="DEVELOPER" tm:type="K">
+				    <tm:task tm:number="NPLK900043" tm:parent="NPLK900042" tm:owner="DEV1" tm:type="development"/>
+				    <tm:task tm:number="NPLK900044" tm:parent="NPLK900042" tm:owner="DEV2" tm:type="development"/>
+				  </tm:workbench>
+				</tm:root>
+				""";
+
+			assertThat(PatternUtils.extractParentTransport(xml, "NPLK900044")).isEqualTo("NPLK900042");
+			assertThat(PatternUtils.extractParentTransport(xml, "NPLK900043")).isEqualTo("NPLK900042");
+			assertThat(PatternUtils.extractParentTransport(xml, "NPLK900099")).isNull();
+		}
+	}
 }

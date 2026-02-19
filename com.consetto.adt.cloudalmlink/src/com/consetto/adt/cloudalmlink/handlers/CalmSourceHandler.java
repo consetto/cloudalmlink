@@ -82,9 +82,16 @@ public class CalmSourceHandler extends AbstractHandler {
 		// STEP 2: Fetch released versions from /versions endpoint
 		VersionData versions = fetchVersions(urls.versionsURL, destination, restResourceFactory, window);
 
+		// STEP 2.5: Resolve task transports to parent requests
+		if (versions != null) {
+			enrichUnresolvedFeatures(versions, destination, restResourceFactory);
+		}
+
 		// STEP 3: Add active transport as first entry if found
 		if (versions != null && activeTransportId != null) {
 			versions.addActiveVersion(activeTransportId);
+			// Also handle active version - if it didn't get a feature, resolve its parent
+			enrichUnresolvedFeatures(versions, destination, restResourceFactory);
 		}
 
 		// Display results in TransportView
@@ -395,6 +402,38 @@ public class CalmSourceHandler extends AbstractHandler {
 	}
 
 	/**
+	 * Extracts the parent transport request number from a CTS XML response.
+	 * If the given transport ID is a task (appears in a tm:task element),
+	 * returns the parent transport request number.
+	 *
+	 * @param xmlResponse The XML response from CTS endpoint
+	 * @param transportId The transport ID to check
+	 * @return The parent transport number if this is a task, null otherwise
+	 */
+	private String extractParentTransport(String xmlResponse, String transportId) {
+		if (xmlResponse == null || transportId == null) {
+			return null;
+		}
+
+		Pattern taskElementPattern = Pattern.compile("<tm:task\\s([^>]+)>");
+		Matcher matcher = taskElementPattern.matcher(xmlResponse);
+		while (matcher.find()) {
+			String attributes = matcher.group(1);
+			if (attributes.contains("tm:number=\"" + transportId + "\"")) {
+				Pattern parentPattern = Pattern.compile("tm:parent=\"([^\"]+)\"");
+				Matcher parentMatcher = parentPattern.matcher(attributes);
+				if (parentMatcher.find()) {
+					String parent = parentMatcher.group(1);
+					if (!parent.isEmpty()) {
+						return parent;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Fetches version data from the versions endpoint.
 	 *
 	 * @param versionsURL The versions endpoint URL
@@ -423,6 +462,71 @@ public class CalmSourceHandler extends AbstractHandler {
 			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
 					"An exception occurred reading the versions: " + e.getMessage());
 			return null;
+		}
+	}
+
+	/**
+	 * Resolves a transport ID to its parent transport request if it is a task.
+	 * Calls the ADT CTS endpoint and parses the response to find a parent.
+	 *
+	 * @param transportId The transport ID to check
+	 * @param destination The ABAP destination ID
+	 * @param restResourceFactory The REST resource factory
+	 * @return The parent transport ID if this is a task, the original ID otherwise
+	 */
+	private String resolveParentTransport(String transportId, String destination,
+			IRestResourceFactory restResourceFactory) {
+		try {
+			URI ctsUri = URI.create("/sap/bc/adt/cts/transportrequests/" + transportId);
+			IRestResource ctsResource = restResourceFactory.createResourceWithStatelessSession(
+					ctsUri, destination);
+
+			IHeaders ctsHeader = HeadersFactory.newHeaders();
+			IField ctsAcceptField = HeadersFactory.newField("Accept", "application/vnd.sap.as+xml");
+			ctsHeader.setField(ctsAcceptField);
+
+			IMessageBody ctsBody = ctsResource.get(null, ctsHeader, IMessageBody.class);
+			if (ctsBody != null) {
+				byte[] bytes = ctsBody.getContent().readAllBytes();
+				String ctsResponse = new String(bytes, StandardCharsets.UTF_8);
+				String parentId = extractParentTransport(ctsResponse, transportId);
+				if (parentId != null) {
+					return parentId;
+				}
+			}
+		} catch (Exception e) {
+			// CTS lookup failed - return original transport ID
+		}
+
+		return transportId;
+	}
+
+	/**
+	 * Enriches versions that have a transport ID but no feature by resolving
+	 * task transports to their parent request and retrying the Cloud ALM lookup.
+	 *
+	 * @param versions The version data to enrich
+	 * @param destination The ABAP destination ID
+	 * @param restResourceFactory The REST resource factory
+	 */
+	private void enrichUnresolvedFeatures(VersionData versions, String destination,
+			IRestResourceFactory restResourceFactory) {
+		var apiService = versions.getApiService();
+		if (apiService == null) {
+			return;
+		}
+
+		for (var version : versions.getVersions()) {
+			String transportId = version.getTransportId();
+			if (transportId != null && !transportId.isEmpty() && version.getFeature() == null) {
+				String parentId = resolveParentTransport(transportId, destination, restResourceFactory);
+				if (!parentId.equals(transportId)) {
+					var feature = apiService.getFeature(parentId);
+					if (feature != null) {
+						version.setFeature(feature);
+					}
+				}
+			}
 		}
 	}
 

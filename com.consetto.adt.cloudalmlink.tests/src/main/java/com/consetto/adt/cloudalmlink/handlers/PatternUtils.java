@@ -185,6 +185,39 @@ public class PatternUtils {
 	}
 
 	/**
+	 * Extracts the parent transport request number from a CTS transport request XML response.
+	 * If the given transport ID is a task (appears in a {@code <tm:task>} element),
+	 * returns the parent transport request number from the {@code tm:parent} attribute.
+	 *
+	 * @param xmlResponse The XML response from /sap/bc/adt/cts/transportrequests/{id}
+	 * @param transportId The transport ID to check
+	 * @return The parent transport number if the ID is a task, null otherwise
+	 */
+	public static String extractParentTransport(String xmlResponse, String transportId) {
+		if (xmlResponse == null || transportId == null) {
+			return null;
+		}
+
+		// Find <tm:task ...> elements and check for matching tm:number
+		Pattern taskElementPattern = Pattern.compile("<tm:task\\s([^>]+)>");
+		Matcher matcher = taskElementPattern.matcher(xmlResponse);
+		while (matcher.find()) {
+			String attributes = matcher.group(1);
+			if (attributes.contains("tm:number=\"" + transportId + "\"")) {
+				Pattern parentPattern = Pattern.compile("tm:parent=\"([^\"]+)\"");
+				Matcher parentMatcher = parentPattern.matcher(attributes);
+				if (parentMatcher.find()) {
+					String parent = parentMatcher.group(1);
+					if (!parent.isEmpty()) {
+						return parent;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Finds all Cloud ALM IDs in a line of text.
 	 *
 	 * @param lineText The text to search

@@ -184,6 +184,15 @@ public final class VersionData {
 	}
 
 	/**
+	 * Gets the Cloud ALM API service used by this instance.
+	 *
+	 * @return The API service, or null if not configured
+	 */
+	public ICloudAlmApiService getApiService() {
+		return apiService;
+	}
+
+	/**
 	 * Gets the number of versions.
 	 *
 	 * @return The version count
