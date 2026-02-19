@@ -51,10 +51,10 @@ class FeatureElementTest {
 		}
 
 		@Test
-		@DisplayName("should store and retrieve status code")
+		@DisplayName("should store and retrieve status code as display text")
 		void shouldStoreAndRetrieveStatusCode() {
-			feature.setStatusCode("IN_PROGRESS");
-			assertThat(feature.getStatus()).isEqualTo("IN_PROGRESS");
+			feature.setStatusCode("IN_REALIZATION");
+			assertThat(feature.getStatus()).isEqualTo("In Implementation");
 		}
 
 		@Test
@@ -126,40 +126,7 @@ class FeatureElementTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Status Codes")
-	class StatusCodes {
-
-		@Test
-		@DisplayName("should handle IN_PROGRESS status")
-		void shouldHandleInProgressStatus() {
-			feature.setStatusCode("IN_PROGRESS");
-			assertThat(feature.getStatus()).isEqualTo("IN_PROGRESS");
-		}
-
-		@Test
-		@DisplayName("should handle RELEASED status")
-		void shouldHandleReleasedStatus() {
-			feature.setStatusCode("RELEASED");
-			assertThat(feature.getStatus()).isEqualTo("RELEASED");
-		}
-
-		@Test
-		@DisplayName("should handle COMPLETED status")
-		void shouldHandleCompletedStatus() {
-			feature.setStatusCode("COMPLETED");
-			assertThat(feature.getStatus()).isEqualTo("COMPLETED");
-		}
-
-		@Test
-		@DisplayName("should handle IN_REVIEW status")
-		void shouldHandleInReviewStatus() {
-			feature.setStatusCode("IN_REVIEW");
-			assertThat(feature.getStatus()).isEqualTo("IN_REVIEW");
-		}
-	}
-
-	@Nested
+@Nested
 	@DisplayName("Display ID Formats")
 	class DisplayIdFormats {
 
@@ -204,7 +171,7 @@ class FeatureElementTest {
 					"uuid": "abc123-def456",
 					"displayId": "6-1337",
 					"title": "Implement Rubber Duck Debugging",
-					"statusCode": "IN_PROGRESS",
+					"statusCode": "IN_REALIZATION",
 					"projectId": "PRJ001",
 					"responsibleId": "DEBUG_DUCK",
 					"priorityCode": 2
@@ -216,7 +183,7 @@ class FeatureElementTest {
 			assertThat(deserializedFeature.getUuid()).isEqualTo("abc123-def456");
 			assertThat(deserializedFeature.getDisplayId()).isEqualTo("6-1337");
 			assertThat(deserializedFeature.getTitle()).isEqualTo("Implement Rubber Duck Debugging");
-			assertThat(deserializedFeature.getStatus()).isEqualTo("IN_PROGRESS");
+			assertThat(deserializedFeature.getStatus()).isEqualTo("In Implementation");
 			assertThat(deserializedFeature.getProjectId()).isEqualTo("PRJ001");
 			assertThat(deserializedFeature.getResponsibleId()).isEqualTo("DEBUG_DUCK");
 			assertThat(deserializedFeature.getPriorityCode()).isEqualTo(2);
@@ -252,7 +219,7 @@ class FeatureElementTest {
 					"description": "This feature fixes a critical issue",
 					"modifiedAt": "2024-01-20T15:30:00Z",
 					"scopeId": "SCOPE-MAIN",
-					"statusCode": "COMPLETED",
+					"statusCode": "CONFIRMED",
 					"priorityCode": 1,
 					"type": "USER_STORY",
 					"responsibleId": "BUG_WHISPERER",
@@ -270,7 +237,7 @@ class FeatureElementTest {
 			assertThat(deserializedFeature.getDescription()).isEqualTo("This feature fixes a critical issue");
 			assertThat(deserializedFeature.getModifiedAt()).isEqualTo("2024-01-20T15:30:00Z");
 			assertThat(deserializedFeature.getScopeId()).isEqualTo("SCOPE-MAIN");
-			assertThat(deserializedFeature.getStatus()).isEqualTo("COMPLETED");
+			assertThat(deserializedFeature.getStatus()).isEqualTo("Deployed");
 			assertThat(deserializedFeature.getPriorityCode()).isEqualTo(1);
 			assertThat(deserializedFeature.getType()).isEqualTo("USER_STORY");
 			assertThat(deserializedFeature.getResponsibleId()).isEqualTo("BUG_WHISPERER");

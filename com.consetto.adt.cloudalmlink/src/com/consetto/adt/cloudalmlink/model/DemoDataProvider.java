@@ -45,7 +45,7 @@ public class DemoDataProvider {
 		FeatureElement activeFeature = new FeatureElement();
 		activeFeature.setDisplayId("6-1234");
 		activeFeature.setTitle("Fix the coffee machine API");
-		activeFeature.setStatusCode("IN_PROGRESS");
+		activeFeature.setStatusCode("IN_REALIZATION");
 		activeFeature.setResponsibleId("ABAP_JOE");
 		active.setFeature(activeFeature);
 		demoVersions.add(active);
@@ -59,7 +59,7 @@ public class DemoDataProvider {
 		FeatureElement f1 = new FeatureElement();
 		f1.setDisplayId("6-1337");
 		f1.setTitle("Implement Rubber Duck Debugging Module");
-		f1.setStatusCode("RELEASED");
+		f1.setStatusCode("APPROVED_FOR_DEPLOYMENT");
 		f1.setResponsibleId("DEBUG_DUCK");
 		v1.setFeature(f1);
 		demoVersions.add(v1);
@@ -73,7 +73,7 @@ public class DemoDataProvider {
 		FeatureElement f2 = new FeatureElement();
 		f2.setDisplayId("6-404");
 		f2.setTitle("Feature Not Found - But We Fixed It");
-		f2.setStatusCode("COMPLETED");
+		f2.setStatusCode("CONFIRMED");
 		f2.setResponsibleId("BUG_WHISPERER");
 		v2.setFeature(f2);
 		demoVersions.add(v2);
@@ -87,7 +87,7 @@ public class DemoDataProvider {
 		FeatureElement f3 = new FeatureElement();
 		f3.setDisplayId("6-42");
 		f3.setTitle("The Answer to Life, Universe, and This Bug");
-		f3.setStatusCode("IN_REVIEW");
+		f3.setStatusCode("IN_TESTING");
 		f3.setResponsibleId("DEEP_THOUGHT");
 		v3.setFeature(f3);
 		demoVersions.add(v3);

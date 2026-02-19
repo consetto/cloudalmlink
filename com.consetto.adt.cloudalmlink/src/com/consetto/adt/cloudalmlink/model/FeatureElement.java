@@ -1,11 +1,24 @@
 package com.consetto.adt.cloudalmlink.model;
 
+import java.util.Map;
+
 /**
  * Represents a Cloud ALM feature entity.
  * Deserialized from JSON API responses via Gson.
  * Contains feature metadata such as display ID, title, status, and project information.
  */
 public class FeatureElement {
+
+	/** Maps technical status codes to Cloud ALM Frontend display labels. */
+	private static final Map<String, String> STATUS_DISPLAY_MAP = Map.of(
+			"CREATED", "In Specification",
+			"NOT_PLANNED", "Not Planned",
+			"IN_REALIZATION", "In Implementation",
+			"IN_TESTING", "In Testing",
+			"SUCCESSFULLY_TESTED", "Successfully Tested",
+			"APPROVED_FOR_DEPLOYMENT", "Ready for Production",
+			"CONFIRMED", "Deployed"
+	);
 
 	private String uuid;
 	private String displayId;
@@ -78,7 +91,7 @@ public class FeatureElement {
 	}
 
 	public String getStatus() {
-		return statusCode;
+		return STATUS_DISPLAY_MAP.getOrDefault(statusCode, statusCode);
 	}
 
 	public String getProjectId() {
