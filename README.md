@@ -54,6 +54,10 @@ Results are displayed in the **Cloud ALM Transports** view, showing transport ID
 
 Right-click on a transport request in the Transport Organizer or Transport Editor and select **Open in Cloud ALM** to open the corresponding transport in Cloud ALM.
 
+### Open in Transport Organizer
+
+From the **Cloud ALM Transports** view, right-click any row and select **Open in Transport Organizer** to open the transport directly in ADT's Transport Editor.
+
 
 
 ### Cloud ALM Links in Comments

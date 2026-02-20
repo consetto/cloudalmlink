@@ -20,6 +20,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import org.eclipse.core.resources.IProject;
+
 import com.consetto.adt.cloudalmlink.handlers.AdtObjectContext.AtomLink;
 import com.consetto.adt.cloudalmlink.model.DemoDataProvider;
 import com.consetto.adt.cloudalmlink.model.VersionData;
@@ -59,7 +61,7 @@ public class CalmSourceHandler extends AbstractHandler {
 		if (context == null) {
 			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
 					"Could not determine ABAP object from editor or selection");
-			showTransportView(event, null);
+			showTransportView(event, null, null);
 			return null;
 		}
 
@@ -68,7 +70,7 @@ public class CalmSourceHandler extends AbstractHandler {
 		if (urls.versionsURL == null) {
 			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
 					"Could not find versions URL for this object");
-			showTransportView(event, null);
+			showTransportView(event, null, context.getProject());
 			return null;
 		}
 		
@@ -99,7 +101,7 @@ public class CalmSourceHandler extends AbstractHandler {
 		}
 
 		// Display results in TransportView
-		showTransportView(event, versions);
+		showTransportView(event, versions, context.getProject());
 
 		return null;
 	}
@@ -566,12 +568,13 @@ public class CalmSourceHandler extends AbstractHandler {
 	/**
 	 * Displays the version data in the TransportView.
 	 */
-	private void showTransportView(ExecutionEvent event, VersionData versions) {
+	private void showTransportView(ExecutionEvent event, VersionData versions, IProject project) {
 		try {
 			IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
 			workbenchPage.showView("com.consetto.adt.cloudalmlink.views.TransportView");
 			TransportView transportView = (TransportView) workbenchPage
 					.findView("com.consetto.adt.cloudalmlink.views.TransportView");
+			transportView.setProject(project);
 			transportView.setVersionData(versions);
 		} catch (PartInitException e) {
 			// View could not be opened - fail silently

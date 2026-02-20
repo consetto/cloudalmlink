@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -40,6 +41,10 @@ import com.consetto.adt.cloudalmlink.model.VersionData;
 import com.consetto.adt.cloudalmlink.model.VersionElement;
 import com.consetto.adt.cloudalmlink.services.PreferenceService;
 import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
+import com.sap.adt.tools.core.model.adtcore.IAdtCoreFactory;
+import com.sap.adt.tools.core.model.adtcore.IAdtObjectReference;
+import com.sap.adt.tools.core.ui.navigation.AdtNavigationServiceFactory;
+import com.sap.adt.tools.core.ui.navigation.IAdtNavigationService;
 
 import jakarta.inject.Inject;
 
@@ -56,8 +61,10 @@ public class TransportView extends ViewPart {
 
 	private TableViewer viewer;
 	private Action showInBrowserAction;
+	private Action openInTransportOrganizerAction;
 	private TransportFilter searchFilter;
 	private boolean isDemoMode = false;
+	private IProject project;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -169,6 +176,7 @@ public class TransportView extends ViewPart {
 
 	private void fillContextMenu(IMenuManager manager) {
 		manager.add(showInBrowserAction);
+		manager.add(openInTransportOrganizerAction);
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
 
@@ -215,6 +223,45 @@ public class TransportView extends ViewPart {
 		};
 		showInBrowserAction.setText("Open in Cloud ALM");
 		showInBrowserAction.setToolTipText("Show in Browser");
+
+		openInTransportOrganizerAction = new Action() {
+			@Override
+			public void run() {
+				if (isDemoMode) {
+					showMessage("Open in Transport Organizer is not available in demo mode.");
+					return;
+				}
+
+				IStructuredSelection selection = viewer.getStructuredSelection();
+				Object obj = selection.getFirstElement();
+
+				if (obj instanceof VersionElement version) {
+					String transportId = version.getTransportId();
+
+					if (transportId != null && !transportId.isEmpty()) {
+						if (project == null) {
+							showMessage("No project context available. Please reopen the view from an ABAP object.");
+							return;
+						}
+						try {
+							IAdtNavigationService navigationService = AdtNavigationServiceFactory.createNavigationService();
+							IAdtObjectReference ref = IAdtCoreFactory.eINSTANCE.createAdtObjectReference();
+							ref.setUri("/sap/bc/adt/cts/transportrequests/" + transportId);
+							navigationService.navigate(project, ref, true);
+						} catch (Exception e) {
+							CloudAlmLinkLogger.logError("Failed to open transport in Transport Organizer: " + transportId, e);
+							showMessage("Could not open transport in Transport Organizer. Please check the Error Log for details.");
+						}
+					} else {
+						showMessage("No Transport ID available for this entry.");
+					}
+				} else {
+					showMessage("Please select a valid Element.");
+				}
+			}
+		};
+		openInTransportOrganizerAction.setText("Open in Transport Organizer");
+		openInTransportOrganizerAction.setToolTipText("Open transport in ADT Transport Organizer");
 	}
 
 	/**
@@ -239,7 +286,18 @@ public class TransportView extends ViewPart {
 		searchFilter = null;
 		viewer = null;
 		showInBrowserAction = null;
+		openInTransportOrganizerAction = null;
+		project = null;
 		super.dispose();
+	}
+
+	/**
+	 * Sets the project context for ADT navigation.
+	 *
+	 * @param project The ABAP project
+	 */
+	public void setProject(IProject project) {
+		this.project = project;
 	}
 
 	/**
