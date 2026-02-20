@@ -1,6 +1,8 @@
 package com.consetto.adt.cloudalmlink.model;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a Cloud ALM feature entity.
@@ -8,6 +10,20 @@ import java.util.Map;
  * Contains feature metadata such as display ID, title, status, and project information.
  */
 public class FeatureElement {
+
+	/** Represents a task assignment (e.g., CALMREQU for Requirement). */
+	public static class TaskAssignment {
+		private String uuid;
+		private String parent_uuid;
+		private String title;
+		private String type;
+
+		public String getTitle() { return title; }
+		public String getType() { return type; }
+
+		public void setTitle(String title) { this.title = title; }
+		public void setType(String type) { this.type = type; }
+	}
 
 	/** Represents an expanded navigation property (e.g., toWorkstream, toScope, toRelease). */
 	public static class ExpandedEntity {
@@ -54,6 +70,7 @@ public class FeatureElement {
 	private ExpandedEntity toWorkstream;
 	private ExpandedEntity toScope;
 	private ExpandedEntity toRelease;
+	private List<TaskAssignment> toTaskAssignments;
 
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
@@ -117,6 +134,10 @@ public class FeatureElement {
 
 	public void setToRelease(ExpandedEntity toRelease) {
 		this.toRelease = toRelease;
+	}
+
+	public void setToTaskAssignments(List<TaskAssignment> toTaskAssignments) {
+		this.toTaskAssignments = toTaskAssignments;
 	}
 
 	// --- Getters ---
@@ -202,5 +223,18 @@ public class FeatureElement {
 	/** Returns the release name from expanded entity, or empty string. */
 	public String getReleaseName() {
 		return toRelease != null ? toRelease.getName() : "";
+	}
+
+	/** Returns the title of the first CALMREQU task assignment, or empty string. */
+	public String getRequirementTitle() {
+		if (toTaskAssignments == null) {
+			return "";
+		}
+		return toTaskAssignments.stream()
+				.filter(t -> "CALMREQU".equals(t.getType()))
+				.map(TaskAssignment::getTitle)
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElse("");
 	}
 }

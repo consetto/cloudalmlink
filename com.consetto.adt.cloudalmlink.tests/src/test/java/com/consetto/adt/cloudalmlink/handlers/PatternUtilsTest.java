@@ -459,6 +459,64 @@ class PatternUtilsTest {
 	}
 
 	@Nested
+	@DisplayName("extractTocTransportId")
+	class ExtractTocTransportId {
+
+		@Test
+		@DisplayName("should extract transport ID from ToC title")
+		void shouldExtractTransportIdFromTocTitle() {
+			String result = PatternUtils.extractTocTransportId("ToC from DEVK900042: Some description");
+
+			assertThat(result).isEqualTo("DEVK900042");
+		}
+
+		@Test
+		@DisplayName("should extract transport ID with space before colon")
+		void shouldExtractWithSpaceBeforeColon() {
+			String result = PatternUtils.extractTocTransportId("ToC from S4DK903536 : 6-3");
+
+			assertThat(result).isEqualTo("S4DK903536");
+		}
+
+		@ParameterizedTest
+		@DisplayName("should extract various transport ID formats")
+		@CsvSource({
+			"'ToC from NPLK900001: Description', NPLK900001",
+			"'ToC from S4DK911940: Another desc', S4DK911940",
+			"'ToC from XYZK000001: Test', XYZK000001",
+			"'ToC from ABCK123456: Fix bug', ABCK123456",
+			"'ToC from S4DK903536 : 6-3', S4DK903536"
+		})
+		void shouldExtractVariousFormats(String title, String expected) {
+			assertThat(PatternUtils.extractTocTransportId(title)).isEqualTo(expected);
+		}
+
+		@Test
+		@DisplayName("should return null for title without ToC prefix")
+		void shouldReturnNullForNonTocTitle() {
+			assertThat(PatternUtils.extractTocTransportId("Regular transport title")).isNull();
+		}
+
+		@Test
+		@DisplayName("should return null for null input")
+		void shouldReturnNullForNullInput() {
+			assertThat(PatternUtils.extractTocTransportId(null)).isNull();
+		}
+
+		@Test
+		@DisplayName("should return null for empty string")
+		void shouldReturnNullForEmptyString() {
+			assertThat(PatternUtils.extractTocTransportId("")).isNull();
+		}
+
+		@Test
+		@DisplayName("should not match ToC in middle of title")
+		void shouldNotMatchTocInMiddle() {
+			assertThat(PatternUtils.extractTocTransportId("Something ToC from DEVK900042: desc")).isNull();
+		}
+	}
+
+	@Nested
 	@DisplayName("extractParentTransport")
 	class ExtractParentTransport {
 
