@@ -12,7 +12,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -51,7 +53,7 @@ public class CalmSourceHandler extends AbstractHandler {
 			showDemoData(event);
 			return null;
 		}
-
+		
 		// Resolve object context from either editor or Project Explorer selection
 		AdtObjectContext context = resolveObjectContext(event, window);
 		if (context == null) {
@@ -69,7 +71,7 @@ public class CalmSourceHandler extends AbstractHandler {
 			showTransportView(event, null);
 			return null;
 		}
-
+		
 		// Ensure user is logged on to the ABAP system
 		AdtLogonServiceUIFactory.createLogonServiceUI().ensureLoggedOn(
 				context.getAbapProject().getDestinationData(),
@@ -103,27 +105,36 @@ public class CalmSourceHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Resolves the ADT object context from either editor or Project Explorer selection.
-	 * Tries editor first, then falls back to selection.
+	 * Resolves the ADT object context based on where the command was triggered.
+	 * Uses the active part to distinguish between editor and non-editor contexts
+	 * (e.g. Project Explorer), so right-clicking in the Project Explorer resolves
+	 * the selected object rather than the object open in the editor.
 	 *
 	 * @param event The execution event
 	 * @param window The workbench window
 	 * @return The resolved context, or null if no valid context found
 	 */
 	private AdtObjectContext resolveObjectContext(ExecutionEvent event, IWorkbenchWindow window) {
-		// Try editor first
-		IAdtFormEditor editor = getActiveAdtEditor();
-		if (editor != null) {
-			AdtObjectContext context = AdtObjectContext.fromEditor(editor);
-			if (context != null) {
-				return context;
-			}
-		}
+		IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 
-		// Fall back to Project Explorer selection
-		ISelection selection = window.getSelectionService().getSelection();
-		if (selection != null) {
-			return AdtObjectContext.fromSelection(selection);
+		if (activePart instanceof IEditorPart) {
+			// Triggered from editor context menu or keyboard shortcut while editor focused
+			IAdtFormEditor editor = getActiveAdtEditor();
+			if (editor != null) {
+				AdtObjectContext context = AdtObjectContext.fromEditor(editor);
+				if (context != null) {
+					return context;
+				}
+			}
+		} else {
+			// Triggered from Project Explorer or other non-editor view
+			ISelection selection = HandlerUtil.getCurrentSelection(event);
+			if (selection != null) {
+				AdtObjectContext context = AdtObjectContext.fromSelection(selection);
+				if (context != null) {
+					return context;
+				}
+			}
 		}
 
 		return null;
@@ -199,6 +210,11 @@ public class CalmSourceHandler extends AbstractHandler {
 		// Handle class definitions
 		if (urls.versionsURL == null && "CLAS/OO".equals(type)) {
 			urls.versionsURL = "includes/definitions/versions";
+		}
+		
+		// Handle everything else with a generic versions path
+		if (urls.versionsURL == null) {
+			urls.versionsURL = "versions";
 		}
 
 		// Resolve relative version URL to absolute path
@@ -462,7 +478,7 @@ public class CalmSourceHandler extends AbstractHandler {
 			return (VersionData) versionResource.get(null, requestHeader, VersionData.class);
 		} catch (RuntimeException e) {
 			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
-					"An exception occurred reading the versions: " + e.getMessage());
+					"Unable to read the versions for this object. URL " + versionsURL + " did not return the right version.");
 			return null;
 		}
 	}

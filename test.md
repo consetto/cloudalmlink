@@ -13,7 +13,14 @@ The test suite is designed to validate the core business logic of the Cloud ALM 
 
 ```
 com.consetto.adt.cloudalmlink.tests/
-├── pom.xml                          # Maven build configuration
+├── run-tests.sh                     # Test runner script (compile + run)
+├── lib/                             # JARs (committed, no internet needed)
+│   ├── junit-platform-console-standalone-1.10.2.jar
+│   ├── junit-jupiter-api-5.10.2.jar
+│   ├── assertj-core-3.25.3.jar
+│   ├── gson-2.12.1.jar
+│   └── ...                          # (10 JARs total)
+├── build/                           # Compiled output (gitignored)
 ├── src/
 │   ├── main/java/                   # Testable source copies (Eclipse-free)
 │   │   └── com/consetto/adt/cloudalmlink/
@@ -42,75 +49,40 @@ com.consetto.adt.cloudalmlink.tests/
 ## Prerequisites
 
 - **Java 21** or higher
-- **Maven 3.8+**
+- No build tool (Maven/Gradle) required — the included shell script handles everything
 
 ## Running the Tests
 
-### Using Maven (Command Line)
-
-Navigate to the test project directory and run:
+### Using the test runner script
 
 ```bash
+# From the repo root:
+./com.consetto.adt.cloudalmlink.tests/run-tests.sh
+
+# Or from the test project directory:
 cd com.consetto.adt.cloudalmlink.tests
-
-# Run all tests
-mvn test
-
-# Run tests with verbose output
-mvn test -X
-
-# Run a specific test class
-mvn test -Dtest=BearerTokenTest
-
-# Run tests matching a pattern
-mvn test -Dtest="*Handler*"
-
-# Run tests and generate report
-mvn test surefire-report:report
+./run-tests.sh
 ```
 
-### Using Gradle (Command Line)
+The script handles compilation and test execution automatically:
 
-Alternatively, you can use Gradle:
+- **First run**: downloads any missing JARs to `lib/`, compiles all sources, runs tests
+- **Subsequent runs** (no source changes): skips compilation, runs tests directly
+- **After editing a `.java` file**: detects the change, recompiles, then runs tests
 
-```bash
-cd com.consetto.adt.cloudalmlink.tests
-
-# Run all tests
-./gradlew test
-
-# Run tests with verbose output
-./gradlew test --info
-
-# Run a specific test class
-./gradlew test --tests "BearerTokenTest"
-
-# Run tests matching a pattern
-./gradlew test --tests "*Handler*"
-
-# Generate test report
-./gradlew test jacocoTestReport
-```
-
-**Note:** If you don't have Gradle installed, use the Gradle wrapper:
-```bash
-# Generate wrapper (one time)
-gradle wrapper
-
-# Then use ./gradlew (macOS/Linux) or gradlew.bat (Windows)
-```
+Incremental compilation uses a marker file (`build/.compiled`) — if any `.java` source is newer than the marker, the script recompiles. All JARs are committed to `lib/`, so no internet access is needed for normal use.
 
 ### Using an IDE
 
 #### IntelliJ IDEA
-1. Import the `com.consetto.adt.cloudalmlink.tests` directory as a Maven project
-2. Right-click on `src/test/java` → Run 'All Tests'
-3. Or run individual test classes by right-clicking on them
+1. Import the `com.consetto.adt.cloudalmlink.tests` directory as a project
+2. Add all JARs from `lib/` to the module classpath
+3. Right-click on `src/test/java` → Run 'All Tests'
 
 #### Eclipse
-1. Import the test project as an existing Maven project
-2. Right-click on project → Run As → Maven test
-3. Or right-click on a test class → Run As → JUnit Test
+1. Import the test project
+2. Add all JARs from `lib/` to the build path
+3. Right-click on a test class → Run As → JUnit Test
 
 #### VS Code
 1. Install the "Java Test Runner" extension
@@ -186,16 +158,17 @@ The test project uses the following dependencies:
 | Dependency | Version | Purpose |
 |------------|---------|---------|
 | JUnit Jupiter | 5.10.2 | Test framework |
-| Mockito | 5.11.0 | Mocking framework |
+| JUnit Platform Console Standalone | 1.10.2 | CLI test runner |
 | AssertJ | 3.25.3 | Fluent assertions |
 | Gson | 2.12.1 | JSON deserialization tests |
+| ByteBuddy | 1.14.12 | Runtime code generation (AssertJ dependency) |
+| OpenTest4J | 1.3.0 | Test exception types |
+
+All JARs are committed to `lib/` for reproducibility without internet access.
 
 ## Test Reports
 
-After running tests with Maven, reports are available at:
-- Console output: Test results summary
-- `target/surefire-reports/`: Detailed test reports (XML and TXT)
-- `target/site/surefire-report.html`: HTML report (after running `mvn surefire-report:report`)
+Test results are printed directly to the console by the JUnit Platform Console runner, including a tree view of all tests and a summary with pass/fail counts.
 
 ---
 
