@@ -6,6 +6,7 @@ Detailed information can be found at https://cloudalmlink.consetto.com/
 
 ## Prerequisites
 
+- Java 21 or newer
 - Eclipse IDE 2025-03 or newer
 - ABAP Development Tools (ADT) installed
 - Enabled Cloud ALM API with Scope calm-api.features.read
@@ -35,15 +36,19 @@ Before using the plugin, you need to configure your Cloud ALM tenant settings:
    - **Region**: Your Cloud ALM region (e.g., `eu10`)
    - **Client ID**: Your Client ID
    - **Client Secret**: Your Client Secret
+   - **Enable Demo Mode**: Try the plugin with sample data, no Cloud ALM connection required
 
 ## Features
 
 ### Show Transports and Features
 
-From any ABAP source editor, you can view the transports and Cloud ALM features associated with the current object:
+View the transports and Cloud ALM features associated with an ABAP object:
 
-- Right-click in the editor and select **Show Transports and Features**
+- Right-click in the ABAP source editor and select **Show Transports and Features**
+- Right-click on an ABAP object in the **Project Explorer** and select **Show Transports and Features**
 - Or use the keyboard shortcut **Ctrl+6** (Cmd+6 on macOS)
+
+Results are displayed in the **Cloud ALM Transports** view, showing transport ID, title, feature, status, responsible person, and more. Use the search field to filter across all columns in real-time.
 
 ### Open Feature from Transport Organizer
 
@@ -57,6 +62,8 @@ The plugin automatically detects Cloud ALM IDs in your ABAP source code comments
 
 - **Features**: IDs starting with `6-` (e.g., `6-1234`)
 - **Tasks/Requirements**: IDs starting with `3-` (e.g., `3-144444`)
+- **Documents**: IDs starting with `7-` (e.g., `7-5678`)
+- **Libraries**: IDs starting with `15-` (e.g., `15-9012`)
 
 To use this feature:
 1. Add a Cloud ALM ID in a comment, for example:
