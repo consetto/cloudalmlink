@@ -2,6 +2,8 @@ package com.consetto.adt.cloudalmlink.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -255,6 +257,67 @@ class FeatureElementTest {
 	}
 
 	@Nested
+	@DisplayName("Requirement Title")
+	class RequirementTitle {
+
+		@Test
+		@DisplayName("should return title when CALMREQU assignment exists")
+		void shouldReturnTitleWhenCalmRequExists() {
+			FeatureElement.TaskAssignment ta = new FeatureElement.TaskAssignment();
+			ta.setType("CALMREQU");
+			ta.setTitle("Must support decaf");
+			feature.setToTaskAssignments(List.of(ta));
+
+			assertThat(feature.getRequirementTitle()).isEqualTo("Must support decaf");
+		}
+
+		@Test
+		@DisplayName("should return empty string when no CALMREQU exists")
+		void shouldReturnEmptyWhenNoCalmRequ() {
+			FeatureElement.TaskAssignment ta = new FeatureElement.TaskAssignment();
+			ta.setType("CALMTASK");
+			ta.setTitle("Some task");
+			feature.setToTaskAssignments(List.of(ta));
+
+			assertThat(feature.getRequirementTitle()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("should return empty string when toTaskAssignments is null")
+		void shouldReturnEmptyWhenNull() {
+			assertThat(feature.getRequirementTitle()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("should return first CALMREQU if multiple exist")
+		void shouldReturnFirstCalmRequ() {
+			FeatureElement.TaskAssignment ta1 = new FeatureElement.TaskAssignment();
+			ta1.setType("CALMREQU");
+			ta1.setTitle("First requirement");
+			FeatureElement.TaskAssignment ta2 = new FeatureElement.TaskAssignment();
+			ta2.setType("CALMREQU");
+			ta2.setTitle("Second requirement");
+			feature.setToTaskAssignments(List.of(ta1, ta2));
+
+			assertThat(feature.getRequirementTitle()).isEqualTo("First requirement");
+		}
+
+		@Test
+		@DisplayName("should skip non-CALMREQU and find CALMREQU")
+		void shouldSkipNonCalmRequAndFindCalmRequ() {
+			FeatureElement.TaskAssignment task = new FeatureElement.TaskAssignment();
+			task.setType("CALMTASK");
+			task.setTitle("A task");
+			FeatureElement.TaskAssignment req = new FeatureElement.TaskAssignment();
+			req.setType("CALMREQU");
+			req.setTitle("The requirement");
+			feature.setToTaskAssignments(List.of(task, req));
+
+			assertThat(feature.getRequirementTitle()).isEqualTo("The requirement");
+		}
+	}
+
+	@Nested
 	@DisplayName("Display ID Formats")
 	class DisplayIdFormats {
 
@@ -407,6 +470,35 @@ class FeatureElementTest {
 			assertThat(deserializedFeature.getWorkstreamName()).isEqualTo("Developer Productivity");
 			assertThat(deserializedFeature.getScopeName()).isEqualTo("New Features");
 			assertThat(deserializedFeature.getReleaseName()).isEqualTo("2025-Q3");
+		}
+
+		@Test
+		@DisplayName("should deserialize toTaskAssignments from JSON")
+		void shouldDeserializeTaskAssignments() {
+			String json = """
+				{
+					"displayId": "6-7777",
+					"title": "Feature with requirements",
+					"toTaskAssignments": [
+						{
+							"uuid": "ta-uuid-001",
+							"parent_uuid": "feature-uuid-001",
+							"title": "Implement login",
+							"type": "CALMTASK"
+						},
+						{
+							"uuid": "ta-uuid-002",
+							"parent_uuid": "feature-uuid-001",
+							"title": "Must support SSO",
+							"type": "CALMREQU"
+						}
+					]
+				}
+				""";
+
+			FeatureElement deserializedFeature = gson.fromJson(json, FeatureElement.class);
+
+			assertThat(deserializedFeature.getRequirementTitle()).isEqualTo("Must support SSO");
 		}
 
 		@Test

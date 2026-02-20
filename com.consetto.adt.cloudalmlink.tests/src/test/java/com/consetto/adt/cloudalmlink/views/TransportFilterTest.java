@@ -2,6 +2,8 @@ package com.consetto.adt.cloudalmlink.views;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -233,6 +235,20 @@ class TransportFilterTest {
 		@DisplayName("should match by modified date")
 		void shouldMatchByModifiedDate() {
 			filter.setSearchText("2025-06-15");
+
+			assertThat(filter.select(versionWithFeature)).isTrue();
+			assertThat(filter.select(versionWithoutFeature)).isFalse();
+		}
+
+		@Test
+		@DisplayName("should match by requirement title")
+		void shouldMatchByRequirementTitle() {
+			FeatureElement.TaskAssignment ta = new FeatureElement.TaskAssignment();
+			ta.setType("CALMREQU");
+			ta.setTitle("Must support SSO login");
+			versionWithFeature.getFeature().setToTaskAssignments(List.of(ta));
+
+			filter.setSearchText("SSO");
 
 			assertThat(filter.select(versionWithFeature)).isTrue();
 			assertThat(filter.select(versionWithoutFeature)).isFalse();

@@ -106,7 +106,7 @@ public class CalmApiHandler implements ICloudAlmApiService {
 
 		// Build API URL for parent feature lookup
 		String transportAPIUrl = config.apiUrl() + "/Transports/" + transportId
-				+ "/parent?$expand=toWorkstream,toScope,toRelease";
+				+ "/parent?$expand=toWorkstream,toScope,toRelease,toTaskAssignments";
 		HttpGet httpGet = new HttpGet(transportAPIUrl);
 
 		// Set authorization header with Bearer token

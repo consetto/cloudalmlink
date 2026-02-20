@@ -67,6 +67,7 @@ public class TransportFilter extends ViewerFilter {
 			if (matches(v.getFeature().getWorkstreamName())) return true;
 			if (matches(v.getFeature().getScopeName())) return true;
 			if (matches(v.getFeature().getReleaseName())) return true;
+			if (matches(v.getFeature().getRequirementTitle())) return true;
 			if (matches(v.getFeature().getModifiedDate())) return true;
 		}
 

@@ -514,8 +514,7 @@ public class CalmSourceHandler extends AbstractHandler {
 	 */
 	private void enrichUnresolvedFeatures(VersionData versions, String destination,
 			IRestResourceFactory restResourceFactory) {
-		var apiService = versions.getApiService();
-		if (apiService == null) {
+		if (versions.getApiService() == null) {
 			return;
 		}
 
@@ -524,7 +523,7 @@ public class CalmSourceHandler extends AbstractHandler {
 			if (transportId != null && !transportId.isEmpty() && version.getFeature() == null) {
 				String parentId = resolveParentTransport(transportId, destination, restResourceFactory);
 				if (!parentId.equals(transportId)) {
-					var feature = apiService.getFeature(parentId);
+					var feature = versions.getOrFetchFeature(parentId);
 					if (feature != null) {
 						version.setFeature(feature);
 					}

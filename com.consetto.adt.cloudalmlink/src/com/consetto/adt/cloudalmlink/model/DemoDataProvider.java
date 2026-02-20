@@ -52,6 +52,9 @@ public class DemoDataProvider {
 		activeFeature.setToWorkstream(createExpandedEntity("Cafeteria Services"));
 		activeFeature.setToScope(createExpandedEntity("Backend Fixes"));
 		activeFeature.setToRelease(createExpandedEntity("2025-Q3"));
+		activeFeature.setToTaskAssignments(List.of(
+				createTaskAssignment("CALMREQU", "Requirement: Coffee API must support decaf")
+		));
 		active.setFeature(activeFeature);
 		demoVersions.add(active);
 
@@ -71,6 +74,9 @@ public class DemoDataProvider {
 		f1.setToWorkstream(createExpandedEntity("Developer Productivity"));
 		f1.setToScope(createExpandedEntity("New Features"));
 		f1.setToRelease(createExpandedEntity("2025-Q2"));
+		f1.setToTaskAssignments(List.of(
+				createTaskAssignment("CALMREQU", "Requirement: Rubber ducks must quack on debug")
+		));
 		v1.setFeature(f1);
 		demoVersions.add(v1);
 
@@ -90,6 +96,10 @@ public class DemoDataProvider {
 		f2.setToWorkstream(createExpandedEntity("Code Quality"));
 		f2.setToScope(createExpandedEntity("Refactoring"));
 		f2.setToRelease(createExpandedEntity("2025-Q1"));
+		f2.setToTaskAssignments(List.of(
+				createTaskAssignment("CALMTASK", "Task: Untangle the spaghetti"),
+				createTaskAssignment("CALMREQU", "Requirement: Code must be al dente")
+		));
 		v2.setFeature(f2);
 		demoVersions.add(v2);
 
@@ -109,6 +119,9 @@ public class DemoDataProvider {
 		f3.setToWorkstream(createExpandedEntity("Temporal Anomalies"));
 		f3.setToScope(createExpandedEntity("Bug Fixes"));
 		f3.setToRelease(createExpandedEntity("2025-Q2"));
+		f3.setToTaskAssignments(List.of(
+				createTaskAssignment("CALMREQU", "Requirement: Fridays must not crash the system")
+		));
 		v3.setFeature(f3);
 		demoVersions.add(v3);
 
@@ -122,6 +135,13 @@ public class DemoDataProvider {
 		demoVersions.add(v4);
 
 		return demoVersions;
+	}
+
+	private static FeatureElement.TaskAssignment createTaskAssignment(String type, String title) {
+		FeatureElement.TaskAssignment ta = new FeatureElement.TaskAssignment();
+		ta.setType(type);
+		ta.setTitle(title);
+		return ta;
 	}
 
 	private static FeatureElement.ExpandedEntity createExpandedEntity(String name) {

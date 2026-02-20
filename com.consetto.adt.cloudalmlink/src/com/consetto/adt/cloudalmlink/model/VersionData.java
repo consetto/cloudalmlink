@@ -2,7 +2,11 @@ package com.consetto.adt.cloudalmlink.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -20,8 +24,11 @@ import com.sap.adt.tools.core.content.AdtStaxContentHandlerUtility;
  */
 public final class VersionData {
 
+	private static final Pattern TOC_PATTERN = Pattern.compile("^ToC from (\\S+)\\s*:");
+
 	private final List<VersionElement> versions;
 	private final ICloudAlmApiService apiService;
+	private final Map<String, FeatureElement> featureCache = new HashMap<>();
 
 	/**
 	 * Creates a new VersionData instance with the specified API service.
@@ -127,7 +134,46 @@ public final class VersionData {
 	}
 
 	/**
+	 * Extracts the transport ID from a "ToC from" title.
+	 * If the title matches "ToC from {transportId}: ...", returns the transport ID.
+	 *
+	 * @param title The version title to check
+	 * @return The transport ID if title matches ToC pattern, null otherwise
+	 */
+	static String extractTocTransportId(String title) {
+		if (title == null) {
+			return null;
+		}
+		Matcher matcher = TOC_PATTERN.matcher(title);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return null;
+	}
+
+	/**
+	 * Returns a cached feature for the given transport ID, or fetches it from
+	 * Cloud ALM and caches the result. Null results are cached to avoid retrying
+	 * failed lookups.
+	 *
+	 * @param transportId The transport ID to look up
+	 * @return The feature element, or null if not found or no API service
+	 */
+	public FeatureElement getOrFetchFeature(String transportId) {
+		if (apiService == null) {
+			return null;
+		}
+		if (featureCache.containsKey(transportId)) {
+			return featureCache.get(transportId);
+		}
+		FeatureElement feature = apiService.getFeature(transportId);
+		featureCache.put(transportId, feature);
+		return feature;
+	}
+
+	/**
 	 * Fetches and assigns Cloud ALM features for all versions with transport IDs.
+	 * Uses ToC title pattern to resolve parent transport IDs and caches results.
 	 */
 	private void assignFeatures() {
 		if (apiService == null) {
@@ -136,7 +182,9 @@ public final class VersionData {
 
 		for (VersionElement version : versions) {
 			if (version.getTransportId() != null && !version.getTransportId().isEmpty()) {
-				FeatureElement feature = apiService.getFeature(version.getTransportId());
+				String tocId = extractTocTransportId(version.getTitle());
+				String lookupId = (tocId != null) ? tocId : version.getTransportId();
+				FeatureElement feature = getOrFetchFeature(lookupId);
 				if (feature != null) {
 					version.setFeature(feature);
 				}
@@ -171,12 +219,10 @@ public final class VersionData {
 		activeVersion.setTitle("Current working version");
 		activeVersion.setLastUpdate(java.time.Instant.now().toString());
 
-		// Fetch Cloud ALM feature for the active transport
-		if (apiService != null) {
-			FeatureElement feature = apiService.getFeature(transportId);
-			if (feature != null) {
-				activeVersion.setFeature(feature);
-			}
+		// Fetch Cloud ALM feature for the active transport (uses cache)
+		FeatureElement feature = getOrFetchFeature(transportId);
+		if (feature != null) {
+			activeVersion.setFeature(feature);
 		}
 
 		// Add at the beginning of the list

@@ -101,6 +101,15 @@ public final class TransportViewColumns {
 						)
 				),
 				new TableColumnDefinition<>(
+						"Modified",
+						100,
+						v -> v.getFeature() != null ? v.getFeature().getModifiedDate() : "No Feature",
+						Comparator.comparing(
+								v -> v.getFeature() != null ? v.getFeature().getModifiedDate() : "",
+								Comparator.nullsLast(Comparator.naturalOrder())
+						)
+				),
+				new TableColumnDefinition<>(
 						"Scope",
 						120,
 						v -> v.getFeature() != null ? v.getFeature().getScopeName() : "No Feature",
@@ -119,11 +128,11 @@ public final class TransportViewColumns {
 						)
 				),
 				new TableColumnDefinition<>(
-						"Modified",
-						100,
-						v -> v.getFeature() != null ? v.getFeature().getModifiedDate() : "No Feature",
+						"Requirement",
+						200,
+						v -> v.getFeature() != null ? v.getFeature().getRequirementTitle() : "No Feature",
 						Comparator.comparing(
-								v -> v.getFeature() != null ? v.getFeature().getModifiedDate() : "",
+								v -> v.getFeature() != null ? v.getFeature().getRequirementTitle() : "",
 								Comparator.nullsLast(Comparator.naturalOrder())
 						)
 				)

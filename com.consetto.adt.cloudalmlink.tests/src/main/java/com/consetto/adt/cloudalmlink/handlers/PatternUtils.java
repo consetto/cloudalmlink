@@ -217,6 +217,27 @@ public class PatternUtils {
 		return null;
 	}
 
+	// ToC title pattern: "ToC from DEVK900042: ..."
+	private static final Pattern TOC_PATTERN = Pattern.compile("^ToC from (\\S+)\\s*:");
+
+	/**
+	 * Extracts the transport ID from a "ToC from" title.
+	 * If the title matches "ToC from {transportId}: ...", returns the transport ID.
+	 *
+	 * @param title The version title to check
+	 * @return The transport ID if title matches ToC pattern, null otherwise
+	 */
+	public static String extractTocTransportId(String title) {
+		if (title == null) {
+			return null;
+		}
+		Matcher matcher = TOC_PATTERN.matcher(title);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return null;
+	}
+
 	/**
 	 * Finds all Cloud ALM IDs in a line of text.
 	 *
