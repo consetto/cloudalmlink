@@ -7,7 +7,7 @@ Detailed information can be found at https://cloudalmlink.consetto.com/
 ## Prerequisites
 
 - Java 21 or newer
-- Eclipse IDE 2025-03 or newer
+- Eclipse IDE 2026-03 or newer (the oldest release the current ADT installs on)
 - ABAP Development Tools (ADT) installed
 - Enabled Cloud ALM API with Scope calm-api.features.read
 https://help.sap.com/docs/cloud-alm/apis/enabling-sap-cloud-alm-apis?locale=en-US
@@ -78,6 +78,17 @@ To use this feature:
 2. Hold **Ctrl** (Cmd on macOS) and hover over the ID
 3. Click **Open in Cloud ALM** to open the feature or task in your browser
 
+
+## Building
+
+The plugin, feature and p2 update site are built with Maven and [Tycho](https://github.com/eclipse-tycho/tycho) (JDK 21, Maven 3.9.9+):
+
+```bash
+mvn verify                              # against the oldest supported Eclipse (pom.xml: eclipse.release)
+mvn verify -Declipse.release=latest     # against the newest Eclipse release
+```
+
+The update site lands in `com.consetto.adt.cloudalmlink.site/target/repository` (and as a `.zip` next to it). CI runs both builds on every pull request and weekly, because SAP only publishes the newest ADT.
 
 ## License
 
