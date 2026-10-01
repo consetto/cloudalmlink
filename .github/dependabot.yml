@@ -1,0 +1,28 @@
+# Weekly update PRs for Maven (Tycho, test libraries) and GitHub Actions. Each runs through the
+# same CI as any other pull request, including the build against the latest Eclipse.
+#
+# Eclipse/ADT bundles come from p2 repositories, which Dependabot does not see; the weekly CI run
+# against releases/latest and the newest ADT covers those.
+
+version: 2
+updates:
+  - package-ecosystem: maven
+    directories:
+      - /
+      - /com.consetto.adt.cloudalmlink.tests
+    schedule:
+      interval: weekly
+    groups:
+      # Tycho plugins only work at the same version, so they move together.
+      tycho:
+        patterns: ['org.eclipse.tycho:*']
+      test-libraries:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
