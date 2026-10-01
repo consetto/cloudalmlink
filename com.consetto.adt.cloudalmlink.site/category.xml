@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="com.consetto.adt.cloudalmlink.feature">
+      <category name="calm_link_adt"/>
+   </feature>
+   <category-def name="calm_link_adt" label="Cloud ALM Link for ADT">
+      <description>
+         Seamlessly integrate SAP Cloud ALM into your daily Eclipse workflow. Manage tasks and transports without leaving your development environment.
+      </description>
+   </category-def>
+</site>
