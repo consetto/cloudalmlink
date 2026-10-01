@@ -161,7 +161,7 @@ The test project uses the following dependencies:
 | JUnit Platform Console Standalone | 1.10.2 | CLI test runner |
 | AssertJ | 3.27.7 | Fluent assertions |
 | Gson | 2.12.1 | JSON deserialization tests |
-| ByteBuddy | 1.14.12 | Runtime code generation (AssertJ dependency) |
+| ByteBuddy | 1.18.3 | Runtime code generation (AssertJ dependency) |
 | OpenTest4J | 1.3.0 | Test exception types |
 
 All JARs are committed to `lib/` for reproducibility without internet access.
