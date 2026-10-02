@@ -1,4 +1,4 @@
-package com.consetto.adt.cloudalmlink.handlers;
+package com.consetto.adt.cloudalmlink.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,14 +8,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import com.consetto.adt.cloudalmlink.handlers.AtomLinkParser.AtomLink;
 
 /**
- * Unit tests for {@link AtomLinkParser}.
+ * Unit tests for {@link AdtResponseParser}.
  * Tests XML atom link parsing extracted from AdtObjectContext.
  */
 @DisplayName("AtomLinkParser")
-class AtomLinkParserTest {
+class AdtResponseParserTest {
 
 	@Nested
 	@DisplayName("parseAtomLinks")
@@ -30,11 +29,11 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(1);
-			assertThat(links.get(0).getRel()).isEqualTo("http://www.sap.com/adt/relations/versions");
-			assertThat(links.get(0).getHref()).isEqualTo("/sap/bc/adt/classes/zcl_test/versions");
+			assertThat(links.get(0).rel()).isEqualTo("http://www.sap.com/adt/relations/versions");
+			assertThat(links.get(0).href()).isEqualTo("/sap/bc/adt/classes/zcl_test/versions");
 		}
 
 		@Test
@@ -46,11 +45,11 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(1);
-			assertThat(links.get(0).getRel()).isEqualTo("http://www.sap.com/adt/relations/transport");
-			assertThat(links.get(0).getHref()).isEqualTo("/sap/bc/adt/classes/zcl_test/transports");
+			assertThat(links.get(0).rel()).isEqualTo("http://www.sap.com/adt/relations/transport");
+			assertThat(links.get(0).href()).isEqualTo("/sap/bc/adt/classes/zcl_test/transports");
 		}
 
 		@Test
@@ -62,11 +61,11 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(1);
-			assertThat(links.get(0).getRel()).isEqualTo("self");
-			assertThat(links.get(0).getHref()).isEqualTo("/sap/bc/adt/classes/zcl_test");
+			assertThat(links.get(0).rel()).isEqualTo("self");
+			assertThat(links.get(0).href()).isEqualTo("/sap/bc/adt/classes/zcl_test");
 		}
 
 		@Test
@@ -80,7 +79,7 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(3);
 		}
@@ -94,11 +93,11 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(1);
-			assertThat(links.get(0).getRel()).isEqualTo("test");
-			assertThat(links.get(0).getHref()).isEqualTo("/path");
+			assertThat(links.get(0).rel()).isEqualTo("test");
+			assertThat(links.get(0).href()).isEqualTo("/path");
 		}
 
 		@Test
@@ -110,11 +109,11 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(1);
-			assertThat(links.get(0).getRel()).isEqualTo("versions");
-			assertThat(links.get(0).getHref()).isEqualTo("/versions");
+			assertThat(links.get(0).rel()).isEqualTo("versions");
+			assertThat(links.get(0).href()).isEqualTo("/versions");
 		}
 
 		@Test
@@ -126,17 +125,17 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(1);
-			assertThat(links.get(0).getRel()).isEqualTo("test");
-			assertThat(links.get(0).getHref()).isEqualTo("/path");
+			assertThat(links.get(0).rel()).isEqualTo("test");
+			assertThat(links.get(0).href()).isEqualTo("/path");
 		}
 
 		@Test
 		@DisplayName("should return empty list for null input")
 		void shouldReturnEmptyForNull() {
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(null);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(null);
 
 			assertThat(links).isEmpty();
 		}
@@ -144,7 +143,7 @@ class AtomLinkParserTest {
 		@Test
 		@DisplayName("should return empty list for empty input")
 		void shouldReturnEmptyForEmptyInput() {
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks("");
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks("");
 
 			assertThat(links).isEmpty();
 		}
@@ -158,7 +157,7 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).isEmpty();
 		}
@@ -172,10 +171,10 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(1);
-			assertThat(links.get(0).getHref()).contains("uri=");
+			assertThat(links.get(0).href()).contains("uri=");
 		}
 
 		@Test
@@ -188,7 +187,7 @@ class AtomLinkParserTest {
 				</entry>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(2);
 		}
@@ -203,7 +202,7 @@ class AtomLinkParserTest {
 		void shouldExtractPathFromAdtUri() {
 			String rawUri = "adt://NPL/sap/bc/adt/classes/zcl_test";
 
-			String result = AtomLinkParser.extractPathFromRawUri(rawUri);
+			String result = AdtResponseParser.extractPathFromRawUri(rawUri);
 
 			assertThat(result).isEqualTo("/sap/bc/adt/classes/zcl_test");
 		}
@@ -213,7 +212,7 @@ class AtomLinkParserTest {
 		void shouldExtractPathFromAdtUriWithClient() {
 			String rawUri = "adt://NPL.001/sap/bc/adt/programs/programs/ztest";
 
-			String result = AtomLinkParser.extractPathFromRawUri(rawUri);
+			String result = AdtResponseParser.extractPathFromRawUri(rawUri);
 
 			assertThat(result).isEqualTo("/sap/bc/adt/programs/programs/ztest");
 		}
@@ -223,7 +222,7 @@ class AtomLinkParserTest {
 		void shouldStopAtQueryParams() {
 			String rawUri = "adt://NPL/sap/bc/adt/classes/zcl_test?version=1";
 
-			String result = AtomLinkParser.extractPathFromRawUri(rawUri);
+			String result = AdtResponseParser.extractPathFromRawUri(rawUri);
 
 			assertThat(result).isEqualTo("/sap/bc/adt/classes/zcl_test");
 		}
@@ -233,7 +232,7 @@ class AtomLinkParserTest {
 		void shouldReturnNullWhenNoAdtPath() {
 			String rawUri = "file:///some/local/path";
 
-			String result = AtomLinkParser.extractPathFromRawUri(rawUri);
+			String result = AdtResponseParser.extractPathFromRawUri(rawUri);
 
 			assertThat(result).isNull();
 		}
@@ -241,22 +240,22 @@ class AtomLinkParserTest {
 		@Test
 		@DisplayName("should return null for null input")
 		void shouldReturnNullForNull() {
-			assertThat(AtomLinkParser.extractPathFromRawUri(null)).isNull();
+			assertThat(AdtResponseParser.extractPathFromRawUri(null)).isNull();
 		}
 
 		@Test
 		@DisplayName("should handle various object types")
 		void shouldHandleVariousObjectTypes() {
-			assertThat(AtomLinkParser.extractPathFromRawUri("adt://SYS/sap/bc/adt/classes/zcl_class"))
+			assertThat(AdtResponseParser.extractPathFromRawUri("adt://SYS/sap/bc/adt/classes/zcl_class"))
 				.isEqualTo("/sap/bc/adt/classes/zcl_class");
 
-			assertThat(AtomLinkParser.extractPathFromRawUri("adt://SYS/sap/bc/adt/programs/programs/zprogram"))
+			assertThat(AdtResponseParser.extractPathFromRawUri("adt://SYS/sap/bc/adt/programs/programs/zprogram"))
 				.isEqualTo("/sap/bc/adt/programs/programs/zprogram");
 
-			assertThat(AtomLinkParser.extractPathFromRawUri("adt://SYS/sap/bc/adt/functions/groups/zfgroup"))
+			assertThat(AdtResponseParser.extractPathFromRawUri("adt://SYS/sap/bc/adt/functions/groups/zfgroup"))
 				.isEqualTo("/sap/bc/adt/functions/groups/zfgroup");
 
-			assertThat(AtomLinkParser.extractPathFromRawUri("adt://SYS/sap/bc/adt/ddl/sources/zcds_view"))
+			assertThat(AdtResponseParser.extractPathFromRawUri("adt://SYS/sap/bc/adt/ddl/sources/zcds_view"))
 				.isEqualTo("/sap/bc/adt/ddl/sources/zcds_view");
 		}
 	}
@@ -270,8 +269,8 @@ class AtomLinkParserTest {
 		void shouldStoreRelAndHref() {
 			AtomLink link = new AtomLink("http://www.sap.com/adt/relations/versions", "/sap/bc/adt/versions");
 
-			assertThat(link.getRel()).isEqualTo("http://www.sap.com/adt/relations/versions");
-			assertThat(link.getHref()).isEqualTo("/sap/bc/adt/versions");
+			assertThat(link.rel()).isEqualTo("http://www.sap.com/adt/relations/versions");
+			assertThat(link.href()).isEqualTo("/sap/bc/adt/versions");
 		}
 
 		@Test
@@ -279,8 +278,8 @@ class AtomLinkParserTest {
 		void shouldHandleNullValues() {
 			AtomLink link = new AtomLink(null, null);
 
-			assertThat(link.getRel()).isNull();
-			assertThat(link.getHref()).isNull();
+			assertThat(link.rel()).isNull();
+			assertThat(link.href()).isNull();
 		}
 	}
 
@@ -302,23 +301,23 @@ class AtomLinkParserTest {
 				</class:abapClass>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(4);
 
 			AtomLink versionsLink = links.stream()
-				.filter(l -> l.getRel().contains("versions"))
+				.filter(l -> l.rel().contains("versions"))
 				.findFirst()
 				.orElse(null);
 			assertThat(versionsLink).isNotNull();
-			assertThat(versionsLink.getHref()).contains("versions");
+			assertThat(versionsLink.href()).contains("versions");
 
 			AtomLink transportLink = links.stream()
-				.filter(l -> l.getRel().contains("transport"))
+				.filter(l -> l.rel().contains("transport"))
 				.findFirst()
 				.orElse(null);
 			assertThat(transportLink).isNotNull();
-			assertThat(transportLink.getHref()).contains("transports");
+			assertThat(transportLink.href()).contains("transports");
 		}
 
 		@Test
@@ -333,16 +332,16 @@ class AtomLinkParserTest {
 				</program:abapProgram>
 				""";
 
-			List<AtomLink> links = AtomLinkParser.parseAtomLinks(xml);
+			List<AtomLink> links = AdtResponseParser.parseAtomLinks(xml);
 
 			assertThat(links).hasSize(2);
 
 			AtomLink versionsLink = links.stream()
-				.filter(l -> l.getRel().contains("versions"))
+				.filter(l -> l.rel().contains("versions"))
 				.findFirst()
 				.orElse(null);
 			assertThat(versionsLink).isNotNull();
-			assertThat(versionsLink.getHref()).isEqualTo("/sap/bc/adt/programs/programs/ztest_program/source/main/versions");
+			assertThat(versionsLink.href()).isEqualTo("/sap/bc/adt/programs/programs/ztest_program/source/main/versions");
 		}
 	}
 }
