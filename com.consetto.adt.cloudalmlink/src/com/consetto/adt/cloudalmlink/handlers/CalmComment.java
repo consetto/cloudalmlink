@@ -2,13 +2,14 @@ package com.consetto.adt.cloudalmlink.handlers;
 
 import java.net.URL;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
-import com.consetto.adt.cloudalmlink.preferences.PreferenceConstants;
+import com.consetto.adt.cloudalmlink.model.CloudAlmConfig;
+import com.consetto.adt.cloudalmlink.model.CloudAlmItemType;
+import com.consetto.adt.cloudalmlink.services.PreferenceService;
+import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
 
 /**
  * Represents a Cloud ALM reference found in source code comments.
@@ -42,34 +43,17 @@ public class CalmComment implements IHyperlink {
 
 	@Override
 	public void open() {
-		ScopedPreferenceStore store = new ScopedPreferenceStore(InstanceScope.INSTANCE,
-				"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-		String calmRegion = store.getString(PreferenceConstants.P_REG);
-		String tenant = store.getString(PreferenceConstants.P_TEN);
-
-		String baseUrl = "https://" + tenant + "." + calmRegion + ".alm.cloud.sap";
-		String url;
-
-		if (itemId.startsWith("6-")) {
-			// Feature
-			url = baseUrl + "/launchpad#feature-display?sap-ui-app-id-hint=com.sap.calm.imp.cdm.features.ui&/details/" + itemId;
-		} else if (itemId.startsWith("3-")) {
-			// Task/Requirement
-			url = baseUrl + "/launchpad#task-management?sap-app-origin-hint=&/taskDetail/" + itemId;
-		} else if (itemId.startsWith("7-")) {
-			// Document
-			url = baseUrl + "/launchpad#DocumentationObject-manage?sap-ui-app-id-hint=com.sap.calm.imp.sd.docu.ui&/Documents('" + itemId + "')";
-		} else if (itemId.startsWith("15-")) {
-			// Library
-			url = baseUrl + "/launchpad#library-management?sap-ui-app-id-hint=com.sap.calm.imp.lib.ui&/LibraryElement('" + itemId + "')";
-		} else {
+		CloudAlmConfig config = PreferenceService.getInstance().getCloudAlmConfig();
+		String url = CloudAlmItemType.getUrlForItem(itemId, config);
+		if (url == null) {
+			CloudAlmLinkLogger.logWarning("Cannot open " + itemId + ": Cloud ALM tenant and region are not configured");
 			return;
 		}
 
 		try {
 			PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
 		} catch (Exception e) {
-			// Browser could not be opened - fail silently
+			CloudAlmLinkLogger.logError("Failed to open browser for URL: " + url, e);
 		}
 	}
 }
