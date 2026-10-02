@@ -56,4 +56,8 @@ public class VersionElement {
 	public String getID() {
 		return versionId;
 	}
+
+	public String getLastUpdate() {
+		return updated;
+	}
 }
