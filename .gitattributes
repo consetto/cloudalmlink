@@ -1,0 +1,14 @@
+# Normalise line endings in the repository; check out with the platform default.
+* text=auto
+
+*.sh        text eol=lf
+*.java      text
+*.xml       text
+*.MF        text
+*.properties text
+*.md        text
+
+*.png       binary
+*.jar       binary
+*.zip       binary
+*.afdesign  binary
