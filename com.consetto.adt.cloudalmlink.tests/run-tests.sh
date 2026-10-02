@@ -20,12 +20,12 @@ ensure_jar() {
 
 ensure_jar "junit-platform-console-standalone-1.10.2.jar" \
     "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.2/junit-platform-console-standalone-1.10.2.jar"
-ensure_jar "assertj-core-3.25.3.jar" \
-    "https://repo1.maven.org/maven2/org/assertj/assertj-core/3.25.3/assertj-core-3.25.3.jar"
+ensure_jar "assertj-core-3.27.7.jar" \
+    "https://repo1.maven.org/maven2/org/assertj/assertj-core/3.27.7/assertj-core-3.27.7.jar"
 ensure_jar "gson-2.12.1.jar" \
     "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.12.1/gson-2.12.1.jar"
-ensure_jar "byte-buddy-1.14.12.jar" \
-    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.14.12/byte-buddy-1.14.12.jar"
+ensure_jar "byte-buddy-1.18.3.jar" \
+    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.18.3/byte-buddy-1.18.3.jar"
 ensure_jar "opentest4j-1.3.0.jar" \
     "https://repo1.maven.org/maven2/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar"
 ensure_jar "junit-jupiter-api-5.10.2.jar" \
@@ -70,5 +70,5 @@ fi
 # --- 4. Run tests ---
 echo ""
 java -jar "$LIB_DIR/junit-platform-console-standalone-1.10.2.jar" \
-    --class-path "$BUILD_DIR:$LIB_DIR/assertj-core-3.25.3.jar:$LIB_DIR/gson-2.12.1.jar:$LIB_DIR/byte-buddy-1.14.12.jar" \
+    --class-path "$BUILD_DIR:$LIB_DIR/assertj-core-3.27.7.jar:$LIB_DIR/gson-2.12.1.jar:$LIB_DIR/byte-buddy-1.18.3.jar" \
     --scan-class-path "$BUILD_DIR"
