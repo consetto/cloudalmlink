@@ -6,13 +6,15 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Bundle;
 
+import com.consetto.adt.cloudalmlink.CloudAlmLinkConstants;
+
 /**
  * Centralized logging utility for the Cloud ALM Link plugin.
  * Uses Eclipse Platform logging infrastructure.
  */
 public final class CloudAlmLinkLogger {
 
-	private static final String PLUGIN_ID = "com.consetto.adt.cloudalmlink";
+	private static final String PLUGIN_ID = CloudAlmLinkConstants.PLUGIN_ID;
 
 	private CloudAlmLinkLogger() {
 		// Prevent instantiation

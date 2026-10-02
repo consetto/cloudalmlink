@@ -19,13 +19,6 @@ public record BearerToken(
 	private static final long EXPIRATION_BUFFER_MS = 5000L;
 
 	/**
-	 * Compact constructor for validation.
-	 */
-	public BearerToken {
-		// Allow null values from JSON deserialization, but expirationTime defaults to 0
-	}
-
-	/**
 	 * Creates a BearerToken from Gson deserialization with calculated expiration time.
 	 * This is the primary factory method to use after Gson creates the initial record.
 	 *
@@ -104,17 +97,5 @@ public record BearerToken(
 	 */
 	public String getTokenType() {
 		return token_type;
-	}
-
-	// Legacy support methods for backward compatibility
-
-	/**
-	 * @deprecated Use {@link #withCalculatedExpiration(BearerToken)} instead.
-	 *             Creates a new token with calculated expiration time.
-	 * @return A new BearerToken with expiration time set
-	 */
-	@Deprecated
-	public BearerToken withExpirationTime() {
-		return withCalculatedExpiration(this);
 	}
 }
