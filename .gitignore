@@ -1,3 +1,6 @@
-/.DS_Store
+.DS_Store
 com.consetto.adt.cloudalmlink.tests/build/
 com.consetto.adt.cloudalmlink.tests/lib/
+
+# Maven / Tycho build output
+target/

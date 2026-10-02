@@ -18,13 +18,6 @@
       </initializer>
    </extension>
    <extension
-         point="org.eclipse.ui.intro.configExtension">
-      <configExtension
-            configId="org.eclipse.ui.intro.universalConfig"
-            content="Cloud ALM Link for ADT/sample.xml">
-      </configExtension>
-   </extension>
-   <extension
          point="org.eclipse.ui.views">
       <category
             name="ABAP"

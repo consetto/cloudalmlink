@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Reactor and parent for the Tycho build: plugin, feature, p2 update site, unit tests.
+
+  mvn verify                               builds against the default (oldest supported) Eclipse
+  mvn verify -Declipse.release=latest      builds against the newest Eclipse release
+  Result: com.consetto.adt.cloudalmlink.site/target/repository (p2 update site) and its .zip
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.consetto.adt</groupId>
+    <artifactId>cloudalmlink-parent</artifactId>
+    <version>0.9.5-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Cloud ALM Link for ADT</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <tycho.version>5.0.4</tycho.version>
+        <!-- The oldest Eclipse release the current ADT installs on (ADT 3.60 needs 4.39 = 2026-03).
+             CI also builds against "latest". -->
+        <eclipse.release>2026-03</eclipse.release>
+        <eclipse.repo>https://download.eclipse.org/releases/${eclipse.release}</eclipse.repo>
+        <!-- SAP publishes only the newest ADT; used to compile against, never redistributed. -->
+        <adt.repo>https://tools.hana.ondemand.com/latest</adt.repo>
+    </properties>
+
+    <modules>
+        <module>com.consetto.adt.cloudalmlink</module>
+        <module>com.consetto.adt.cloudalmlink.feature</module>
+        <module>com.consetto.adt.cloudalmlink.site</module>
+        <module>com.consetto.adt.cloudalmlink.tests</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>eclipse</id>
+            <layout>p2</layout>
+            <url>${eclipse.repo}</url>
+        </repository>
+        <repository>
+            <id>adt</id>
+            <layout>p2</layout>
+            <url>${adt.repo}</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-maven-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <executionEnvironment>JavaSE-21</executionEnvironment>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-packaging-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <!-- Same qualifier format as the releases published so far, e.g. 0.9.5.202602212106 -->
+                    <format>yyyyMMddHHmm</format>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
