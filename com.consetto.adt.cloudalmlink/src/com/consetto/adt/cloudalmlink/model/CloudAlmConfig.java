@@ -1,5 +1,7 @@
 package com.consetto.adt.cloudalmlink.model;
 
+import java.util.regex.Pattern;
+
 import com.consetto.adt.cloudalmlink.CloudAlmLinkConstants;
 
 /**
@@ -14,21 +16,37 @@ public record CloudAlmConfig(
 ) {
 
 	/**
+	 * A single DNS label. Tenant and region become part of the host name that receives the
+	 * client credentials, so anything else (".", "/", "#", "@") could redirect them elsewhere.
+	 */
+	private static final Pattern HOST_LABEL = Pattern.compile("[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?");
+
+	/**
 	 * Checks if the configuration has all required fields populated.
 	 *
 	 * @return true if all required fields are non-empty
 	 */
 	public boolean isValid() {
-		return isNotEmpty(tenant) && isNotEmpty(region) && isNotEmpty(clientId) && isNotEmpty(clientSecret);
+		return hasConnectionSettings() && isNotEmpty(clientId) && isNotEmpty(clientSecret);
 	}
 
 	/**
 	 * Checks if connection settings (tenant and region) are configured.
 	 *
-	 * @return true if tenant and region are non-empty
+	 * @return true if tenant and region are non-empty, valid host name labels
 	 */
 	public boolean hasConnectionSettings() {
-		return isNotEmpty(tenant) && isNotEmpty(region);
+		return isHostLabel(tenant) && isHostLabel(region);
+	}
+
+	/**
+	 * Checks if a value can safely be used as one label of a host name.
+	 *
+	 * @param value The tenant or region
+	 * @return true if the value is a single DNS label
+	 */
+	public static boolean isHostLabel(String value) {
+		return value != null && HOST_LABEL.matcher(value).matches();
 	}
 
 	/**
