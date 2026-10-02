@@ -234,36 +234,4 @@ public final class VersionData {
 	public boolean isEmpty() {
 		return versions.isEmpty();
 	}
-
-	// Legacy singleton support for backward compatibility during migration
-	// TODO: Remove after all callers are updated to use instance methods
-
-	private static volatile VersionData instance;
-
-	/**
-	 * @deprecated Use instance methods or factory methods instead.
-	 *             This method is provided for backward compatibility during migration.
-	 */
-	@Deprecated
-	public static VersionData getInstance() {
-		if (instance == null) {
-			synchronized (VersionData.class) {
-				if (instance == null) {
-					instance = new VersionData();
-				}
-			}
-		}
-		return instance;
-	}
-
-	/**
-	 * @deprecated Use instance methods instead.
-	 *             Sets the shared instance for backward compatibility.
-	 */
-	@Deprecated
-	public static void setInstance(VersionData data) {
-		synchronized (VersionData.class) {
-			instance = data;
-		}
-	}
 }
