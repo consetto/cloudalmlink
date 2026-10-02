@@ -1,0 +1,58 @@
+# Build gate for pushes to master and for every pull request.
+#
+# Builds the plugin, feature and p2 update site with Tycho and runs the unit tests, against two
+# Eclipse releases: the oldest one the current ADT installs on (the default in pom.xml) and the
+# newest one. SAP only publishes the newest ADT, so a new ADT or Eclipse release can break the
+# build without any change here; the weekly run finds that before a user does.
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+# The job only reads the repository.
+permissions:
+  contents: read
+
+# A new push to the same branch supersedes the previous run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Eclipse ${{ matrix.eclipse }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # "default" = eclipse.release in pom.xml (oldest supported); "latest" = newest Eclipse release.
+        eclipse: ['default', 'latest']
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build and test
+        run: |
+          args=""
+          if [ "${{ matrix.eclipse }}" != "default" ]; then args="-Declipse.release=${{ matrix.eclipse }}"; fi
+          mvn -B -ntp verify $args
+
+      - name: Upload update site
+        uses: actions/upload-artifact@v7
+        with:
+          name: update-site-eclipse-${{ matrix.eclipse }}
+          path: com.consetto.adt.cloudalmlink.site/target/repository/
+          retention-days: 14
