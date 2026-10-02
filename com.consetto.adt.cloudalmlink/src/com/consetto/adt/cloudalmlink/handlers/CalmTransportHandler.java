@@ -13,6 +13,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import com.consetto.adt.cloudalmlink.core.AdtResponseParser;
 import com.consetto.adt.cloudalmlink.model.CloudAlmConfig;
 import com.consetto.adt.cloudalmlink.model.FeatureElement;
 import com.consetto.adt.cloudalmlink.services.ICloudAlmApiService;
@@ -52,7 +53,7 @@ public class CalmTransportHandler extends AbstractHandler {
 
 				// Fall back to description parsing if API lookup fails
 				if (featureId == null) {
-					featureId = getFeatureFromDescription(req.getDesc());
+					featureId = AdtResponseParser.extractFeatureIdFromDescription(req.getDesc());
 				}
 
 				if (featureId != null) {
@@ -101,28 +102,6 @@ public class CalmTransportHandler extends AbstractHandler {
 		FeatureElement feature = getApiService().getFeature(transportId);
 		if (feature != null) {
 			return feature.getDisplayId();
-		}
-		return null;
-	}
-
-	/**
-	 * Extracts the Cloud ALM feature ID from a transport description.
-	 * Feature IDs follow the pattern "6-NNNN" (e.g., "6-123").
-	 * (Fallback method if API lookup fails.)
-	 *
-	 * @param descr The transport request description
-	 * @return The feature ID if found and valid, null otherwise
-	 */
-	private String getFeatureFromDescription(String descr) {
-		if (descr == null || descr.isEmpty()) {
-			return null;
-		}
-
-		String[] descrSplit = descr.split(":");
-		String feature = descrSplit[0];
-
-		if (feature.matches("^6-\\d+$")) {
-			return feature;
 		}
 		return null;
 	}

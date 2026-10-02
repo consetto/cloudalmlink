@@ -5,12 +5,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import com.consetto.adt.cloudalmlink.core.AdtResponseParser;
 import com.consetto.adt.cloudalmlink.handlers.CalmApiHandler;
 import com.consetto.adt.cloudalmlink.services.ICloudAlmApiService;
 import com.sap.adt.communication.content.ContentHandlerException;
@@ -23,8 +22,6 @@ import com.sap.adt.tools.core.content.AdtStaxContentHandlerUtility;
  * No longer a singleton - instances are created via factory methods.
  */
 public final class VersionData {
-
-	private static final Pattern TOC_PATTERN = Pattern.compile("^ToC from (\\S+)\\s*:");
 
 	private final List<VersionElement> versions;
 	private final ICloudAlmApiService apiService;
@@ -134,24 +131,6 @@ public final class VersionData {
 	}
 
 	/**
-	 * Extracts the transport ID from a "ToC from" title.
-	 * If the title matches "ToC from {transportId}: ...", returns the transport ID.
-	 *
-	 * @param title The version title to check
-	 * @return The transport ID if title matches ToC pattern, null otherwise
-	 */
-	static String extractTocTransportId(String title) {
-		if (title == null) {
-			return null;
-		}
-		Matcher matcher = TOC_PATTERN.matcher(title);
-		if (matcher.find()) {
-			return matcher.group(1);
-		}
-		return null;
-	}
-
-	/**
 	 * Returns a cached feature for the given transport ID, or fetches it from
 	 * Cloud ALM and caches the result. Null results are cached to avoid retrying
 	 * failed lookups.
@@ -182,7 +161,7 @@ public final class VersionData {
 
 		for (VersionElement version : versions) {
 			if (version.getTransportId() != null && !version.getTransportId().isEmpty()) {
-				String tocId = extractTocTransportId(version.getTitle());
+				String tocId = AdtResponseParser.extractTocTransportId(version.getTitle());
 				String lookupId = (tocId != null) ? tocId : version.getTransportId();
 				FeatureElement feature = getOrFetchFeature(lookupId);
 				if (feature != null) {

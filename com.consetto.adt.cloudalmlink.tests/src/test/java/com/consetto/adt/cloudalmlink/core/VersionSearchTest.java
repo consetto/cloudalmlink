@@ -1,4 +1,4 @@
-package com.consetto.adt.cloudalmlink.views;
+package com.consetto.adt.cloudalmlink.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,19 +13,19 @@ import com.consetto.adt.cloudalmlink.model.FeatureElement;
 import com.consetto.adt.cloudalmlink.model.VersionElement;
 
 /**
- * Unit tests for {@link TransportFilter}.
+ * Unit tests for {@link VersionSearch}.
  * Tests filtering logic for the TransportView.
  */
-@DisplayName("TransportFilter")
-class TransportFilterTest {
+@DisplayName("VersionSearch")
+class VersionSearchTest {
 
-	private TransportFilter filter;
+	private VersionSearch filter;
 	private VersionElement versionWithFeature;
 	private VersionElement versionWithoutFeature;
 
 	@BeforeEach
 	void setUp() {
-		filter = new TransportFilter();
+		filter = new VersionSearch();
 
 		// Create version with feature
 		versionWithFeature = new VersionElement();
