@@ -19,8 +19,9 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
  */
 public class CalmCommentScanner implements IHyperlinkDetector {
 
-	// Matches features (6-NNNN), tasks/requirements (3-NNNN), documents (7-NNNN), and libraries (15-NNNN)
-	private static final Pattern CALM_ID_PATTERN = Pattern.compile("(?:3|6|7|15)-\\d+");
+	// Matches features (6-NNNN), tasks/requirements (3-NNNN), documents (7-NNNN), and libraries (15-NNNN).
+	// Not inside a longer number: the date 2023-06-15 must not yield "3-06", and 13-45 not "3-45".
+	private static final Pattern CALM_ID_PATTERN = Pattern.compile("(?<![\\w-])(?:3|6|7|15)-\\d+(?![\\w-])");
 
 	@Override
 	public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
