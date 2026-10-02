@@ -4,15 +4,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.util.Timeout;
 
 import com.consetto.adt.cloudalmlink.model.BearerToken;
 import com.consetto.adt.cloudalmlink.model.CloudAlmConfig;
@@ -22,6 +26,7 @@ import com.consetto.adt.cloudalmlink.services.ICloudAlmApiService;
 import com.consetto.adt.cloudalmlink.services.PreferenceService;
 import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
 /**
  * Handles communication with the SAP Cloud ALM REST API.
@@ -29,6 +34,13 @@ import com.google.gson.Gson;
  * Implements ICloudAlmApiService for dependency injection and AutoCloseable for resource cleanup.
  */
 public class CalmApiHandler implements ICloudAlmApiService {
+
+	/** Transport IDs go into the request path, so only plain IDs like S4DK911940 are accepted. */
+	private static final Pattern TRANSPORT_ID = Pattern.compile("[A-Za-z0-9]{1,20}");
+
+	/** Without timeouts an unreachable host blocks the caller (today: the UI thread) indefinitely. */
+	private static final Timeout CONNECT_TIMEOUT = Timeout.ofSeconds(10);
+	private static final Timeout RESPONSE_TIMEOUT = Timeout.ofSeconds(30);
 
 	private BearerToken token = null;
 	private final CloseableHttpClient httpClient;
@@ -56,9 +68,17 @@ public class CalmApiHandler implements ICloudAlmApiService {
 		this.connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
 				.setMaxConnTotal(10)
 				.setMaxConnPerRoute(5)
+				.setDefaultConnectionConfig(ConnectionConfig.custom()
+						.setConnectTimeout(CONNECT_TIMEOUT)
+						.setSocketTimeout(RESPONSE_TIMEOUT)
+						.build())
 				.build();
 		this.httpClient = HttpClients.custom()
 				.setConnectionManager(connectionManager)
+				.setDefaultRequestConfig(RequestConfig.custom()
+						.setConnectionRequestTimeout(CONNECT_TIMEOUT)
+						.setResponseTimeout(RESPONSE_TIMEOUT)
+						.build())
 				.build();
 
 		if (config.isValid()) {
@@ -90,7 +110,8 @@ public class CalmApiHandler implements ICloudAlmApiService {
 			return null;
 		}
 
-		if (transportId == null || transportId.isEmpty()) {
+		if (transportId == null || !TRANSPORT_ID.matcher(transportId).matches()) {
+			CloudAlmLinkLogger.logWarning("Ignoring invalid transport ID: " + transportId);
 			return null;
 		}
 
@@ -131,7 +152,7 @@ public class CalmApiHandler implements ICloudAlmApiService {
 				}
 				return null;
 			});
-		} catch (IOException e) {
+		} catch (IOException | JsonParseException e) {
 			CloudAlmLinkLogger.logWarning("Failed to fetch feature for transport " + transportId + ": " + e.getMessage());
 			return null;
 		}
@@ -182,7 +203,7 @@ public class CalmApiHandler implements ICloudAlmApiService {
 				}
 				return null;
 			});
-		} catch (IOException e) {
+		} catch (IOException | JsonParseException e) {
 			CloudAlmLinkLogger.logError("OAuth authentication failed", e);
 		}
 	}
