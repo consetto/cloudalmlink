@@ -13,7 +13,7 @@
 
     <groupId>com.consetto.adt</groupId>
     <artifactId>cloudalmlink-parent</artifactId>
-    <version>0.9.5-SNAPSHOT</version>
+    <version>0.9.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Cloud ALM Link for ADT</name>

@@ -4,7 +4,7 @@
 <feature
       id="com.consetto.adt.cloudalmlink.feature"
       label="Cloud ALM Link for ADT"
-      version="0.9.5.qualifier"
+      version="0.9.6.qualifier"
       provider-name="Consetto GmbH">
 
    <description url="https://cloudalmlink.consetto.com/">
