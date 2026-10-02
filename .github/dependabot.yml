@@ -6,10 +6,10 @@
 
 version: 2
 updates:
+  # The root pom is the reactor and includes the tests module, so "/" covers every pom. Listing the
+  # tests directory as well made Dependabot open each update twice.
   - package-ecosystem: maven
-    directories:
-      - /
-      - /com.consetto.adt.cloudalmlink.tests
+    directory: /
     schedule:
       interval: weekly
     groups:
