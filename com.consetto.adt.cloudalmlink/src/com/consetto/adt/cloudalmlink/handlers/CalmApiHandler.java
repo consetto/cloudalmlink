@@ -21,7 +21,6 @@ import org.apache.hc.core5.util.Timeout;
 import com.consetto.adt.cloudalmlink.model.BearerToken;
 import com.consetto.adt.cloudalmlink.model.CloudAlmConfig;
 import com.consetto.adt.cloudalmlink.model.FeatureElement;
-import com.consetto.adt.cloudalmlink.model.VersionElement;
 import com.consetto.adt.cloudalmlink.services.ICloudAlmApiService;
 import com.consetto.adt.cloudalmlink.services.PreferenceService;
 import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
@@ -155,20 +154,6 @@ public class CalmApiHandler implements ICloudAlmApiService {
 		} catch (IOException | JsonParseException e) {
 			CloudAlmLinkLogger.logWarning("Failed to fetch feature for transport " + transportId + ": " + e.getMessage());
 			return null;
-		}
-	}
-
-	/**
-	 * Retrieves the parent feature for a given transport from Cloud ALM API.
-	 * Legacy method that sets the feature directly on the version element.
-	 *
-	 * @param transportID The SAP transport request ID
-	 * @param version The version element to associate the feature with
-	 */
-	public void getFeature(String transportID, VersionElement version) {
-		FeatureElement feature = getFeature(transportID);
-		if (feature != null) {
-			version.setFeature(feature);
 		}
 	}
 

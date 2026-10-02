@@ -2,11 +2,12 @@ package com.consetto.adt.cloudalmlink.views;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
@@ -17,9 +18,10 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -29,7 +31,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -46,8 +47,6 @@ import com.sap.adt.tools.core.model.adtcore.IAdtObjectReference;
 import com.sap.adt.tools.core.ui.navigation.AdtNavigationServiceFactory;
 import com.sap.adt.tools.core.ui.navigation.IAdtNavigationService;
 
-import jakarta.inject.Inject;
-
 /**
  * Eclipse View displaying transport versions and their associated Cloud ALM features.
  * Provides table view with columns for ID, Transport, Title, Feature, Status, and Responsible.
@@ -55,9 +54,6 @@ import jakarta.inject.Inject;
 public class TransportView extends ViewPart {
 
 	public static final String ID = "com.consetto.adt.cloudalmlink.views.TransportView";
-
-	@Inject
-	IWorkbench workbench;
 
 	private TableViewer viewer;
 	private Action showInBrowserAction;
@@ -80,12 +76,10 @@ public class TransportView extends ViewPart {
 
 		// Initialize filter and connect to search field
 		searchFilter = new TransportFilter();
-		searchText.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				searchFilter.setSearchText(searchText.getText());
-				viewer.refresh();
-			}
+		// ModifyListener rather than key events: also reacts to paste via mouse and to clearing the field
+		searchText.addModifyListener(e -> {
+			searchFilter.setSearchText(searchText.getText());
+			viewer.refresh();
 		});
 
 		createViewer(parent);
@@ -105,7 +99,7 @@ public class TransportView extends ViewPart {
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setUseHashlookup(true);
 		viewer.addFilter(searchFilter);
-		viewer.setInput(VersionData.getInstance().getVersions());
+		viewer.setInput(Collections.emptyList());
 
 		// Make selection available to other views
 		getSite().setSelectionProvider(viewer);
@@ -142,6 +136,9 @@ public class TransportView extends ViewPart {
 			column.setWidth(colDef.width());
 			column.setResizable(true);
 			column.setMoveable(true);
+			Comparator<VersionElement> comparator = colDef.comparator() != null ? colDef.comparator()
+					: Comparator.comparing(colDef::getText, String.CASE_INSENSITIVE_ORDER);
+			column.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> sortBy(column, comparator)));
 
 			viewerColumn.setLabelProvider(new ColumnLabelProvider() {
 				@Override
@@ -153,6 +150,27 @@ public class TransportView extends ViewPart {
 				}
 			});
 		}
+	}
+
+	/**
+	 * Sorts by the clicked column; clicking the same column again reverses the order.
+	 */
+	private void sortBy(TableColumn column, Comparator<VersionElement> comparator) {
+		Table table = viewer.getTable();
+		int direction = table.getSortColumn() == column && table.getSortDirection() == SWT.UP ? SWT.DOWN : SWT.UP;
+		table.setSortColumn(column);
+		table.setSortDirection(direction);
+
+		Comparator<VersionElement> ordered = direction == SWT.UP ? comparator : comparator.reversed();
+		viewer.setComparator(new ViewerComparator() {
+			@Override
+			public int compare(Viewer v, Object e1, Object e2) {
+				if (e1 instanceof VersionElement a && e2 instanceof VersionElement b) {
+					return ordered.compare(a, b);
+				}
+				return 0;
+			}
+		});
 	}
 
 	private void hookContextMenu() {
@@ -307,7 +325,7 @@ public class TransportView extends ViewPart {
 	 */
 	public void setVersionData(VersionData versions) {
 		isDemoMode = false;
-		viewer.setInput(versions != null ? versions.getVersions() : java.util.Collections.emptyList());
+		viewer.setInput(versions != null ? versions.getVersions() : Collections.emptyList());
 	}
 
 	/**
