@@ -88,7 +88,9 @@ mvn verify                              # against the oldest supported Eclipse (
 mvn verify -Declipse.release=latest     # against the newest Eclipse release
 ```
 
-The update site lands in `com.consetto.adt.cloudalmlink.site/target/repository` (and as a `.zip` next to it). CI runs both builds on every pull request and weekly, because SAP only publishes the newest ADT.
+Releases: set the version, merge the PR, then push a tag `vX.Y.Z` matching `Bundle-Version`. The release workflow builds the update site and attaches `cloudalmlink-updatesite-X.Y.Z.zip` to a draft GitHub release.
+
+The update site lands in `com.consetto.adt.cloudalmlink.site/target/repository` (and as a `.zip` next to it). CI runs both builds on every pull request and weekly, because SAP only publishes the newest ADT. See [TESTING.md](TESTING.md) for the unit tests and what needs a manual check in Eclipse.
 
 ## License
 

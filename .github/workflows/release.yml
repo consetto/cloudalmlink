@@ -1,0 +1,70 @@
+# Build the p2 update site for every version tag and attach it to a GitHub release.
+#
+# The tag must match Bundle-Version in the MANIFEST (v0.9.6 ↔ 0.9.6.qualifier); Tycho already
+# keeps the MANIFEST, feature.xml and pom versions in line. Release notes stay hand-written: when
+# no release exists for the tag yet, a DRAFT is created, and an existing release only gets its
+# asset replaced.
+#
+# Publishing a release to the update site is a separate step outside this repository.
+#
+# Run it again for an older tag from the Actions tab ("Run workflow", tag e.g. v0.9.6).
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build and attach, e.g. v0.9.6'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  update-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      # Needed to create the draft release and upload the asset; nothing else in this job writes.
+      contents: write
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Check the tag matches Bundle-Version
+        run: |
+          version="$(sed -n 's/^Bundle-Version: *\([0-9.]*\)\.qualifier.*/\1/p' com.consetto.adt.cloudalmlink/META-INF/MANIFEST.MF)"
+          if [ "v${version}" != "${TAG}" ]; then
+            echo "::error::tag ${TAG} does not match Bundle-Version ${version}"
+            exit 1
+          fi
+          echo "VERSION=${version}" >> "$GITHUB_ENV"
+
+      # Built against the oldest supported Eclipse, like every published version so far; CI has
+      # already built the same commit against the latest one.
+      - name: Build and test
+        run: mvn -B -ntp verify
+
+      - name: Attach to release
+        run: |
+          asset="cloudalmlink-updatesite-${VERSION}.zip"
+          cp com.consetto.adt.cloudalmlink.site/target/*.zip "${asset}"
+          if ! gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release create "${TAG}" --draft --verify-tag --title "${VERSION}" \
+              --notes "Release notes to follow."
+          fi
+          gh release upload "${TAG}" "${asset}" --clobber

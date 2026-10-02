@@ -1,9 +1,7 @@
 package com.consetto.adt.cloudalmlink.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,13 +15,10 @@ import com.google.gson.Gson;
 @DisplayName("BearerToken")
 class BearerTokenTest {
 
-	private BearerToken token;
-	private Gson gson;
+	private final Gson gson = new Gson();
 
-	@BeforeEach
-	void setUp() {
-		token = new BearerToken();
-		gson = new Gson();
+	private static BearerToken expiringAt(long expirationTime) {
+		return new BearerToken("token", "Bearer", null, null, null, expirationTime);
 	}
 
 	@Nested
@@ -33,21 +28,21 @@ class BearerTokenTest {
 		@Test
 		@DisplayName("should store and retrieve access token")
 		void shouldStoreAndRetrieveAccessToken() {
-			token.setAccessToken("test-access-token-123");
+			BearerToken token = BearerToken.create("test-access-token-123", "Bearer", "3600", null, null);
 			assertThat(token.getToken()).isEqualTo("test-access-token-123");
 		}
 
 		@Test
 		@DisplayName("should store and retrieve token type")
 		void shouldStoreAndRetrieveTokenType() {
-			token.setTokenType("Bearer");
+			BearerToken token = BearerToken.create("token", "Bearer", "3600", null, null);
 			assertThat(token.getTokenType()).isEqualTo("Bearer");
 		}
 
 		@Test
 		@DisplayName("should handle null access token")
 		void shouldHandleNullAccessToken() {
-			token.setAccessToken(null);
+			BearerToken token = BearerToken.create(null, "Bearer", "3600", null, null);
 			assertThat(token.getToken()).isNull();
 		}
 	}
@@ -59,44 +54,31 @@ class BearerTokenTest {
 		@Test
 		@DisplayName("should be valid when expiration is in the future")
 		void shouldBeValidWhenExpirationInFuture() {
-			token.setExpiresIn("3600"); // 1 hour
-			token.setExpirationTime();
-
-			assertThat(token.isValid()).isTrue();
+			assertThat(BearerToken.create("token", "Bearer", "3600", null, null).isValid()).isTrue();
 		}
 
 		@Test
 		@DisplayName("should be invalid when expiration has passed")
 		void shouldBeInvalidWhenExpirationPassed() {
-			// Set expiration time to 10 seconds ago
-			token.setExpirationTimeForTesting(System.currentTimeMillis() - 10000);
-
-			assertThat(token.isValid()).isFalse();
+			assertThat(expiringAt(System.currentTimeMillis() - 10_000).isValid()).isFalse();
 		}
 
 		@Test
 		@DisplayName("should be invalid when within 5-second safety buffer")
 		void shouldBeInvalidWithinSafetyBuffer() {
-			// Set expiration time to 3 seconds from now (within 5-second buffer)
-			token.setExpirationTimeForTesting(System.currentTimeMillis() + 3000);
-
-			assertThat(token.isValid()).isFalse();
+			assertThat(expiringAt(System.currentTimeMillis() + 3_000).isValid()).isFalse();
 		}
 
 		@Test
 		@DisplayName("should be valid when just outside 5-second safety buffer")
 		void shouldBeValidJustOutsideSafetyBuffer() {
-			// Set expiration time to 6 seconds from now (outside 5-second buffer)
-			token.setExpirationTimeForTesting(System.currentTimeMillis() + 6000);
-
-			assertThat(token.isValid()).isTrue();
+			assertThat(expiringAt(System.currentTimeMillis() + 6_000).isValid()).isTrue();
 		}
 
 		@Test
-		@DisplayName("should be invalid with default expiration time of 0")
+		@DisplayName("should be invalid without an expiration time")
 		void shouldBeInvalidWithDefaultExpiration() {
-			// Default expiration time is 0
-			assertThat(token.isValid()).isFalse();
+			assertThat(expiringAt(0).isValid()).isFalse();
 		}
 	}
 
@@ -105,39 +87,32 @@ class BearerTokenTest {
 	class ExpirationTimeCalculation {
 
 		@Test
-		@DisplayName("should calculate expiration time correctly for 1 hour")
+		@DisplayName("should calculate expiration time from expires_in seconds")
 		void shouldCalculateExpirationFor1Hour() {
-			long beforeTime = System.currentTimeMillis();
-			token.setExpiresIn("3600");
-			token.setExpirationTime();
-			long afterTime = System.currentTimeMillis();
+			long before = System.currentTimeMillis();
+			BearerToken token = BearerToken.create("token", "Bearer", "3600", null, null);
+			long after = System.currentTimeMillis();
 
-			// Token should be valid for close to 1 hour (minus 5 second buffer)
-			assertThat(token.isValid()).isTrue();
-
-			// Check that 3595 seconds from now it's still valid
-			token.setExpirationTimeForTesting(afterTime + 3600_000);
-			assertThat(token.isValid()).isTrue();
+			assertThat(token.expirationTime()).isBetween(before + 3_600_000, after + 3_600_000);
 		}
 
 		@Test
-		@DisplayName("should calculate expiration time correctly for short duration")
+		@DisplayName("should stay valid for a short duration outside the buffer")
 		void shouldCalculateExpirationForShortDuration() {
-			token.setExpiresIn("10"); // 10 seconds
-			token.setExpirationTime();
-
-			// With only 10 seconds and 5-second buffer, should still be valid (5 seconds left)
-			assertThat(token.isValid()).isTrue();
+			assertThat(BearerToken.create("token", "Bearer", "10", null, null).isValid()).isTrue();
 		}
 
 		@Test
-		@DisplayName("should handle very short expiration that falls within buffer")
+		@DisplayName("should be invalid when expires_in falls within the buffer")
 		void shouldHandleVeryShortExpiration() {
-			token.setExpiresIn("3"); // 3 seconds
-			token.setExpirationTime();
+			assertThat(BearerToken.create("token", "Bearer", "3", null, null).isValid()).isFalse();
+		}
 
-			// 3 seconds is within the 5-second buffer, so should be invalid immediately
-			assertThat(token.isValid()).isFalse();
+		@Test
+		@DisplayName("should be invalid when expires_in is missing or not a number")
+		void shouldBeInvalidForUnparseableExpiresIn() {
+			assertThat(BearerToken.create("token", "Bearer", null, null, null).isValid()).isFalse();
+			assertThat(BearerToken.create("token", "Bearer", "soon", null, null).isValid()).isFalse();
 		}
 	}
 
@@ -158,27 +133,26 @@ class BearerTokenTest {
 				}
 				""";
 
-			BearerToken deserializedToken = gson.fromJson(json, BearerToken.class);
+			BearerToken token = gson.fromJson(json, BearerToken.class);
 
-			assertThat(deserializedToken.getToken()).isEqualTo("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9");
-			assertThat(deserializedToken.getTokenType()).isEqualTo("Bearer");
+			assertThat(token.getToken()).isEqualTo("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9");
+			assertThat(token.getTokenType()).isEqualTo("Bearer");
 		}
 
 		@Test
-		@DisplayName("should handle deserialized token expiration")
+		@DisplayName("should not be valid until the expiration is calculated")
 		void shouldHandleDeserializedTokenExpiration() {
 			String json = """
 				{
 					"access_token": "token123",
 					"token_type": "Bearer",
-					"expires_in": "7200"
+					"expires_in": 7200
 				}
 				""";
 
-			BearerToken deserializedToken = gson.fromJson(json, BearerToken.class);
-			deserializedToken.setExpirationTime();
-
-			assertThat(deserializedToken.isValid()).isTrue();
+			BearerToken raw = gson.fromJson(json, BearerToken.class);
+			assertThat(raw.isValid()).isFalse();
+			assertThat(BearerToken.withCalculatedExpiration(raw).isValid()).isTrue();
 		}
 
 		@Test
@@ -194,9 +168,7 @@ class BearerTokenTest {
 				}
 				""";
 
-			BearerToken deserializedToken = gson.fromJson(json, BearerToken.class);
-
-			assertThat(deserializedToken.getToken()).isEqualTo("token");
+			assertThat(gson.fromJson(json, BearerToken.class).getToken()).isEqualTo("token");
 		}
 	}
 }
