@@ -15,11 +15,7 @@ public class VersionDataContentHandler implements IContentHandler<VersionData> {
 
 	@Override
 	public VersionData deserialize(IMessageBody body, Class<? extends VersionData> dataType) {
-		// Create new VersionData instance using factory method
-		VersionData versionData = VersionData.fromMessageBody(body);
-		// Update shared instance for backward compatibility
-		VersionData.setInstance(versionData);
-		return versionData;
+		return VersionData.fromMessageBody(body);
 	}
 
 	@Override

@@ -1,15 +1,14 @@
 package com.consetto.adt.cloudalmlink.preferences;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import com.consetto.adt.cloudalmlink.model.CloudAlmConfig;
+import com.consetto.adt.cloudalmlink.services.PreferenceService;
 
 /**
  * Preference page for configuring Cloud ALM connection settings.
@@ -19,9 +18,7 @@ public class CloudAlmPeferencePage extends FieldEditorPreferencePage implements 
 
 	public CloudAlmPeferencePage() {
 		super(GRID);
-		ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
-				"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-		setPreferenceStore(scopedPreferenceStore);
+		setPreferenceStore(PreferenceService.getInstance().getPreferenceStore());
 		setDescription("Please enter tenant and region from Cloud ALM: https://tenant.region.alm.cloud.sap");
 	}
 

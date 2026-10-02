@@ -3,10 +3,7 @@ package com.consetto.adt.cloudalmlink.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
-
-import com.consetto.adt.cloudalmlink.preferences.PreferenceConstants;
+import com.consetto.adt.cloudalmlink.services.PreferenceService;
 
 /**
  * Provides demo data for testing the Cloud ALM Link plugin.
@@ -23,9 +20,7 @@ public class DemoDataProvider {
 	 * @return true if demo mode is enabled
 	 */
 	public static boolean isDemoModeEnabled() {
-		ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE,
-				"com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage");
-		return scopedPreferenceStore.getBoolean(PreferenceConstants.P_DEMO);
+		return PreferenceService.getInstance().isDemoModeEnabled();
 	}
 
 	/**
