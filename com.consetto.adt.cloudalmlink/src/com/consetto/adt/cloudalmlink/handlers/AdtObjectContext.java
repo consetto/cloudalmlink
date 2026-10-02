@@ -5,8 +5,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
@@ -14,6 +12,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 
+import com.consetto.adt.cloudalmlink.core.AdtResponseParser;
+import com.consetto.adt.cloudalmlink.core.AtomLink;
+import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
 import com.sap.adt.communication.message.HeadersFactory;
 import com.sap.adt.communication.message.IHeaders;
 import com.sap.adt.communication.message.IHeaders.IField;
@@ -27,7 +28,6 @@ import com.sap.adt.project.ui.util.ProjectUtil;
 import com.sap.adt.tools.core.IAdtObjectReference;
 import com.sap.adt.tools.core.project.IAbapProject;
 import com.sap.adt.tools.core.ui.editors.IAdtFormEditor;
-import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
 
 /**
  * Encapsulates ADT object resolution from either editor or Project Explorer selection.
@@ -42,27 +42,6 @@ public class AdtObjectContext {
 	private List<AtomLink> atomLinks;
 	private String destination;
 	private String rawLocationUri;  // For editor context: the raw file location URI
-
-	/**
-	 * Simple representation of an atom link.
-	 */
-	public static class AtomLink {
-		private final String rel;
-		private final String href;
-
-		public AtomLink(String rel, String href) {
-			this.rel = rel;
-			this.href = href;
-		}
-
-		public String getRel() {
-			return rel;
-		}
-
-		public String getHref() {
-			return href;
-		}
-	}
 
 	private AdtObjectContext() {
 		this.atomLinks = new ArrayList<>();
@@ -101,10 +80,10 @@ public class AdtObjectContext {
 			}
 
 			// Extract object URI from atom links (from uri= parameter)
-			context.objectUri = extractObjectUriFromLinks(context.atomLinks);
+			context.objectUri = AdtResponseParser.extractObjectUri(context.atomLinks);
 			if (context.objectUri == null) {
 				// Fallback: try to get from editor file location
-				context.objectUri = extractPathFromRawUri(context.rawLocationUri);
+				context.objectUri = AdtResponseParser.extractPathFromRawUri(context.rawLocationUri);
 			}
 
 			return context;
@@ -205,7 +184,7 @@ public class AdtObjectContext {
 					String response = new String(bytes, StandardCharsets.UTF_8);
 
 					// Parse atom links from XML response
-					links = parseAtomLinks(response);
+					links = AdtResponseParser.parseAtomLinks(response);
 				}
 			}
 		} catch (Exception e) {
@@ -213,82 +192,6 @@ public class AdtObjectContext {
 		}
 
 		return links;
-	}
-
-	/**
-	 * Parses atom link elements from an XML response.
-	 *
-	 * @param xmlResponse The XML response string
-	 * @return List of parsed atom links
-	 */
-	private static List<AtomLink> parseAtomLinks(String xmlResponse) {
-		List<AtomLink> links = new ArrayList<>();
-
-		// Pattern to match atom:link or link elements with rel and href attributes
-		// Handles both orders: rel before href and href before rel
-		Pattern linkPattern = Pattern.compile(
-				"<(?:atom:)?link[^>]*\\s(?:rel=[\"']([^\"']*)[\"'][^>]*href=[\"']([^\"']*)[\"']|href=[\"']([^\"']*)[\"'][^>]*rel=[\"']([^\"']*)[\"'])[^>]*/?>",
-				Pattern.CASE_INSENSITIVE);
-
-		Matcher matcher = linkPattern.matcher(xmlResponse);
-		while (matcher.find()) {
-			String rel, href;
-			if (matcher.group(1) != null) {
-				// rel before href
-				rel = matcher.group(1);
-				href = matcher.group(2);
-			} else {
-				// href before rel
-				href = matcher.group(3);
-				rel = matcher.group(4);
-			}
-
-			if (rel != null && href != null) {
-				links.add(new AtomLink(rel, href));
-			}
-		}
-
-		return links;
-	}
-
-	/**
-	 * Extracts the object URI from atom links by looking for uri= parameter.
-	 */
-	private static String extractObjectUriFromLinks(List<AtomLink> links) {
-		for (AtomLink link : links) {
-			String href = link.getHref();
-			if (href != null && href.contains("uri=")) {
-				int uriStart = href.indexOf("uri=") + 4;
-				int uriEnd = href.indexOf("&", uriStart);
-				if (uriEnd == -1) {
-					uriEnd = href.length();
-				}
-				String encodedUri = href.substring(uriStart, uriEnd);
-				try {
-					return java.net.URLDecoder.decode(encodedUri, StandardCharsets.UTF_8);
-				} catch (Exception e) {
-					// Decode failed
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Extracts the ADT path from a raw URI string.
-	 */
-	private static String extractPathFromRawUri(String rawUri) {
-		// Format: adt://DEST/sap/bc/adt/...
-		int adtIndex = rawUri.indexOf("/sap/bc/adt/");
-		if (adtIndex != -1) {
-			// Find the end of the path (before any query params)
-			int endIndex = rawUri.indexOf("?", adtIndex);
-			if (endIndex == -1) {
-				endIndex = rawUri.length();
-			}
-			return rawUri.substring(adtIndex, endIndex);
-		}
-		return null;
 	}
 
 	// Getters

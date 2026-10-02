@@ -16,9 +16,6 @@ public final class CloudAlmLinkConstants {
 	/** Preference qualifier for ScopedPreferenceStore */
 	public static final String PREFERENCE_QUALIFIER = "com.consetto.adt.cloudalmlink.preferences.CloudAlmPeferencePage";
 
-	/** Transport View ID for view registration */
-	public static final String TRANSPORT_VIEW_ID = "com.consetto.adt.cloudalmlink.views.TransportView";
-
 	/** Cloud ALM domain suffix */
 	public static final String CLOUD_ALM_DOMAIN = ".alm.cloud.sap";
 
@@ -42,8 +39,4 @@ public final class CloudAlmLinkConstants {
 
 	/** Launchpad fragment for library details */
 	public static final String LIBRARY_LAUNCHPAD_FRAGMENT = "/launchpad#library-management?sap-ui-app-id-hint=com.sap.calm.imp.lib.ui&/LibraryElement('";
-
-	// ADT Relations
-	public static final String TRANSPORT_REL = "http://www.sap.com/adt/relations/transport";
-	public static final String VERSIONS_REL = "http://www.sap.com/adt/relations/versions";
 }
