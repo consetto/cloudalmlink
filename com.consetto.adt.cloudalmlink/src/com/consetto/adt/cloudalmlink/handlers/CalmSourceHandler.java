@@ -295,9 +295,9 @@ public class CalmSourceHandler extends AbstractHandler {
 	private void showDemoData(ExecutionEvent event) {
 		try {
 			IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
-			workbenchPage.showView("com.consetto.adt.cloudalmlink.views.TransportView");
+			workbenchPage.showView(TransportView.ID);
 			TransportView transportView = (TransportView) workbenchPage
-					.findView("com.consetto.adt.cloudalmlink.views.TransportView");
+					.findView(TransportView.ID);
 			transportView.setDemoData(DemoDataProvider.getDemoVersions());
 		} catch (PartInitException e) {
 			// View could not be opened - fail silently
@@ -310,9 +310,9 @@ public class CalmSourceHandler extends AbstractHandler {
 	private void showTransportView(ExecutionEvent event, VersionData versions, IProject project) {
 		try {
 			IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
-			workbenchPage.showView("com.consetto.adt.cloudalmlink.views.TransportView");
+			workbenchPage.showView(TransportView.ID);
 			TransportView transportView = (TransportView) workbenchPage
-					.findView("com.consetto.adt.cloudalmlink.views.TransportView");
+					.findView(TransportView.ID);
 			transportView.setProject(project);
 			transportView.setVersionData(versions);
 		} catch (PartInitException e) {
