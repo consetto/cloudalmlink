@@ -2,14 +2,13 @@ package com.consetto.adt.cloudalmlink.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import com.consetto.adt.cloudalmlink.core.AdtResponseParser;
+import com.consetto.adt.cloudalmlink.core.VersionList;
 import com.consetto.adt.cloudalmlink.handlers.CalmApiHandler;
 import com.consetto.adt.cloudalmlink.services.ICloudAlmApiService;
 import com.sap.adt.communication.content.ContentHandlerException;
@@ -18,14 +17,13 @@ import com.sap.adt.tools.core.content.AdtStaxContentHandlerUtility;
 
 /**
  * Holds version/transport data retrieved from ADT.
- * Parses ATOM+XML responses and enriches versions with Cloud ALM feature data.
- * No longer a singleton - instances are created via factory methods.
+ * Parses the ATOM+XML versions feed; {@link #arrange(String)} and {@link #assignFeatures(Function)}
+ * then complete it.
  */
 public final class VersionData {
 
 	private final List<VersionElement> versions;
 	private final ICloudAlmApiService apiService;
-	private final Map<String, FeatureElement> featureCache = new HashMap<>();
 
 	/**
 	 * Creates a new VersionData instance with the specified API service.
@@ -49,7 +47,7 @@ public final class VersionData {
 	 *
 	 * @param body The message body containing ATOM+XML feed data
 	 * @param apiService The Cloud ALM API service for feature lookup
-	 * @return A new VersionData instance with parsed and enriched data
+	 * @return A new VersionData instance with the parsed versions
 	 */
 	public static VersionData fromMessageBody(IMessageBody body, ICloudAlmApiService apiService) {
 		VersionData data = new VersionData(apiService);
@@ -62,7 +60,7 @@ public final class VersionData {
 	 * Uses a default API handler.
 	 *
 	 * @param body The message body containing ATOM+XML feed data
-	 * @return A new VersionData instance with parsed and enriched data
+	 * @return A new VersionData instance with the parsed versions
 	 */
 	public static VersionData fromMessageBody(IMessageBody body) {
 		VersionData data = new VersionData();
@@ -122,53 +120,27 @@ public final class VersionData {
 				xmlUtility.closeXMLStreamReader(xsr);
 			}
 		}
-
-		// Sort versions by ID in descending order (newest first)
-		versions.sort((v1, v2) -> v2.getID().compareTo(v1.getID()));
-
-		// Enrich versions with Cloud ALM feature data
-		assignFeatures();
 	}
 
 	/**
-	 * Returns a cached feature for the given transport ID, or fetches it from
-	 * Cloud ALM and caches the result. Null results are cached to avoid retrying
-	 * failed lookups.
+	 * Merges the object's current transport into the active version and sorts newest first.
 	 *
-	 * @param transportId The transport ID to look up
-	 * @return The feature element, or null if not found or no API service
+	 * @param activeTransportId The transport from the object's transports endpoint, or null
 	 */
-	public FeatureElement getOrFetchFeature(String transportId) {
-		if (apiService == null) {
-			return null;
-		}
-		if (featureCache.containsKey(transportId)) {
-			return featureCache.get(transportId);
-		}
-		FeatureElement feature = apiService.getFeature(transportId);
-		featureCache.put(transportId, feature);
-		return feature;
+	public void arrange(String activeTransportId) {
+		VersionList.arrange(versions, activeTransportId);
 	}
 
 	/**
-	 * Fetches and assigns Cloud ALM features for all versions with transport IDs.
-	 * Uses ToC title pattern to resolve parent transport IDs and caches results.
+	 * Assigns Cloud ALM features to the versions. Does nothing if Cloud ALM is not configured.
+	 *
+	 * @param parentResolver Returns the request of a task, or its argument if it is none
 	 */
-	private void assignFeatures() {
-		if (apiService == null) {
+	public void assignFeatures(Function<String, String> parentResolver) {
+		if (apiService == null || !apiService.isConfigured()) {
 			return;
 		}
-
-		for (VersionElement version : versions) {
-			if (version.getTransportId() != null && !version.getTransportId().isEmpty()) {
-				String tocId = AdtResponseParser.extractTocTransportId(version.getTitle());
-				String lookupId = (tocId != null) ? tocId : version.getTransportId();
-				FeatureElement feature = getOrFetchFeature(lookupId);
-				if (feature != null) {
-					version.setFeature(feature);
-				}
-			}
-		}
+		VersionList.assignFeatures(versions, apiService::getFeature, parentResolver);
 	}
 
 	/**
@@ -178,43 +150,6 @@ public final class VersionData {
 	 */
 	public List<VersionElement> getVersions() {
 		return Collections.unmodifiableList(versions);
-	}
-
-	/**
-	 * Adds an "Active" version entry at the beginning of the versions list.
-	 * This represents the current working version with its transport assignment.
-	 *
-	 * @param transportId The transport request ID for the active version
-	 */
-	public void addActiveVersion(String transportId) {
-		if (transportId == null || transportId.isEmpty()) {
-			return;
-		}
-
-		// Create active version element
-		VersionElement activeVersion = new VersionElement();
-		activeVersion.setID("Active");
-		activeVersion.setTransport(transportId);
-		activeVersion.setTitle("Current working version");
-		activeVersion.setLastUpdate(java.time.Instant.now().toString());
-
-		// Fetch Cloud ALM feature for the active transport (uses cache)
-		FeatureElement feature = getOrFetchFeature(transportId);
-		if (feature != null) {
-			activeVersion.setFeature(feature);
-		}
-
-		// Add at the beginning of the list
-		versions.add(0, activeVersion);
-	}
-
-	/**
-	 * Gets the Cloud ALM API service used by this instance.
-	 *
-	 * @return The API service, or null if not configured
-	 */
-	public ICloudAlmApiService getApiService() {
-		return apiService;
 	}
 
 	/**

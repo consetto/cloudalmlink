@@ -2,6 +2,8 @@ package com.consetto.adt.cloudalmlink.core;
 
 import java.net.URI;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Finds the versions and transports endpoints of an ADT object from its atom links.
@@ -9,6 +11,12 @@ import java.util.List;
 public final class VersionUris {
 
 	public static final String TRANSPORT_REL = "http://www.sap.com/adt/relations/transport";
+
+	/** History of a whole class; the other includes only cover local types, macros and test classes */
+	private static final String CLASS_VERSIONS = "includes/main/versions";
+
+	/** The class part of an ADT path, e.g. /sap/bc/adt/oo/classes/zcl_test */
+	private static final Pattern CLASS_PATH = Pattern.compile("^(/sap/bc/adt/(?:oo|classlib)/classes/[^/?#]+)");
 
 	/**
 	 * Endpoints of an ADT object.
@@ -33,6 +41,7 @@ public final class VersionUris {
 	 */
 	public static Endpoints find(List<AtomLink> links, String objectType, String objectUri, String rawLocationUri) {
 		String versionsUrl = null;
+		String mainVersionsUrl = null;
 		String transportsUrl = null;
 		String adtBasePath = null;
 
@@ -43,10 +52,15 @@ public final class VersionUris {
 				continue;
 			}
 
-			if (href.contains("source/main/versions")
-					|| href.contains("implementations/versions")
-					|| href.contains("definitions/versions")
-					|| (rel != null && rel.contains("relations/versions"))) {
+			// A class lists one versions link per include, in no guaranteed order
+			if (mainVersionsUrl == null
+					&& (href.contains("source/main/versions") || href.contains(CLASS_VERSIONS))) {
+				mainVersionsUrl = href;
+			}
+			if (versionsUrl == null
+					&& (href.contains("implementations/versions")
+							|| href.contains("definitions/versions")
+							|| (rel != null && rel.contains("relations/versions")))) {
 				versionsUrl = href;
 			}
 			if (TRANSPORT_REL.equals(rel)) {
@@ -57,18 +71,43 @@ public final class VersionUris {
 			}
 		}
 
+		if (mainVersionsUrl != null) {
+			versionsUrl = mainVersionsUrl;
+		}
 		if (versionsUrl == null) {
-			versionsUrl = switch (objectType == null ? "" : objectType) {
-				case "CLAS/OC" -> "includes/implementations/versions";
-				case "CLAS/OO" -> "includes/definitions/versions";
-				default -> "versions";
-			};
+			if (objectType != null && objectType.startsWith("CLAS/")) {
+				String classPath = findClassPath(adtBasePath, objectUri, rawLocationUri);
+				if (classPath != null) {
+					return new Endpoints(classPath + "/" + CLASS_VERSIONS, transportsUrl);
+				}
+				versionsUrl = CLASS_VERSIONS;
+			} else {
+				versionsUrl = "versions";
+			}
 		}
 
 		if (!versionsUrl.startsWith("/")) {
 			versionsUrl = resolveRelative(adtBasePath, versionsUrl, objectUri, rawLocationUri, objectType);
 		}
 		return new Endpoints(versionsUrl, transportsUrl);
+	}
+
+	/**
+	 * Returns the class path from the first of the given locations that contains one,
+	 * with classlib mapped to oo.
+	 */
+	private static String findClassPath(String adtBasePath, String objectUri, String rawLocationUri) {
+		for (String location : new String[] { adtBasePath, objectUri,
+				AdtResponseParser.extractPathFromRawUri(rawLocationUri) }) {
+			if (location == null) {
+				continue;
+			}
+			Matcher matcher = CLASS_PATH.matcher(location);
+			if (matcher.find()) {
+				return matcher.group(1).replace("/adt/classlib/", "/adt/oo/");
+			}
+		}
+		return null;
 	}
 
 	private static String resolveRelative(String adtBasePath, String versionsUrl, String objectUri,
