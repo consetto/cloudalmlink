@@ -48,21 +48,34 @@ class VersionUrisTest {
 		}
 
 		@Test
-		@DisplayName("should use the class implementation include when there is no versions link")
-		void shouldDefaultForClassImplementation() {
-			var endpoints = VersionUris.find(List.of(), "CLAS/OC", "/sap/bc/adt/oo/classes/zcl_test", null);
+		@DisplayName("should prefer the main include's versions link, whatever the link order")
+		void shouldPreferMainInclude() {
+			var links = List.of(
+					new AtomLink("self", "/sap/bc/adt/x?uri=%2Fsap%2Fbc%2Fadt%2Foo%2Fclasses%2Fzcl_test"),
+					new AtomLink(VERSIONS_REL, "includes/definitions/versions"),
+					new AtomLink(VERSIONS_REL, "includes/main/versions"),
+					new AtomLink(VERSIONS_REL, "includes/testclasses/versions"));
 
-			assertThat(endpoints.versionsUrl())
-					.isEqualTo("/sap/bc/adt/oo/classes/zcl_test/includes/implementations/versions");
+			var endpoints = VersionUris.find(links, "CLAS/OC", null, null);
+
+			assertThat(endpoints.versionsUrl()).isEqualTo("/sap/bc/adt/oo/classes/zcl_test/includes/main/versions");
 		}
 
 		@Test
-		@DisplayName("should use the class definition include for CLAS/OO")
-		void shouldDefaultForClassDefinition() {
-			var endpoints = VersionUris.find(List.of(), "CLAS/OO", "/sap/bc/adt/oo/classes/zcl_test", null);
+		@DisplayName("should use the class's main include when there is no versions link")
+		void shouldDefaultForClass() {
+			var endpoints = VersionUris.find(List.of(), "CLAS/OC", "/sap/bc/adt/oo/classes/zcl_test", null);
 
-			assertThat(endpoints.versionsUrl())
-					.isEqualTo("/sap/bc/adt/oo/classes/zcl_test/includes/definitions/versions");
+			assertThat(endpoints.versionsUrl()).isEqualTo("/sap/bc/adt/oo/classes/zcl_test/includes/main/versions");
+		}
+
+		@Test
+		@DisplayName("should take the class from an include's location")
+		void shouldDefaultForClassFromIncludeLocation() {
+			var endpoints = VersionUris.find(List.of(), "CLAS/OO", null,
+					"adt://A4H/sap/bc/adt/classlib/classes/zcl_test/includes/implementations");
+
+			assertThat(endpoints.versionsUrl()).isEqualTo("/sap/bc/adt/oo/classes/zcl_test/includes/main/versions");
 		}
 
 		@Test

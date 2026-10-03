@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.PlatformUI;
 
 import com.consetto.adt.cloudalmlink.core.AdtResponseParser;
 import com.consetto.adt.cloudalmlink.core.AtomLink;
@@ -22,7 +21,6 @@ import com.sap.adt.communication.message.IMessageBody;
 import com.sap.adt.communication.resources.AdtRestResourceFactory;
 import com.sap.adt.communication.resources.IRestResource;
 import com.sap.adt.communication.resources.IRestResourceFactory;
-import com.sap.adt.destinations.ui.logon.AdtLogonServiceUIFactory;
 import com.sap.adt.project.IAdtCoreProject;
 import com.sap.adt.project.ui.util.ProjectUtil;
 import com.sap.adt.tools.core.IAdtObjectReference;
@@ -42,6 +40,7 @@ public class AdtObjectContext {
 	private List<AtomLink> atomLinks;
 	private String destination;
 	private String rawLocationUri;  // For editor context: the raw file location URI
+	private boolean linksFromBackend; // For selection context: atom links still to be fetched
 
 	private AdtObjectContext() {
 		this.atomLinks = new ArrayList<>();
@@ -95,7 +94,7 @@ public class AdtObjectContext {
 
 	/**
 	 * Creates context from a Project Explorer selection.
-	 * Fetches atom links via REST API call to the object's ADT endpoint.
+	 * Does not call the backend; {@link #loadMissingAtomLinks()} fetches the atom links.
 	 *
 	 * @param selection The workbench selection
 	 * @return The object context, or null if extraction failed
@@ -141,19 +140,23 @@ public class AdtObjectContext {
 			context.objectUri = adtObjectRef.getUri().toString();
 			context.objectType = adtObjectRef.getType();
 			context.destination = context.abapProject.getDestinationId();
-
-			// Ensure user is logged on before making REST call
-			AdtLogonServiceUIFactory.createLogonServiceUI().ensureLoggedOn(
-					context.abapProject.getDestinationData(),
-					PlatformUI.getWorkbench().getProgressService());
-
-			// Fetch atom links via REST API
-			context.atomLinks = fetchAtomLinks(context.objectUri, context.destination);
+			context.linksFromBackend = true;
 
 			return context;
 		} catch (Exception e) {
 			CloudAlmLinkLogger.logWarning("Failed to create context from selection: " + e.getMessage());
 			return null;
+		}
+	}
+
+	/**
+	 * Fetches the atom links of a Project Explorer selection from the backend; an editor context
+	 * already has them. Calls the backend; do not call it on the UI thread.
+	 */
+	public void loadMissingAtomLinks() {
+		if (linksFromBackend) {
+			atomLinks = fetchAtomLinks(objectUri, destination);
+			linksFromBackend = false;
 		}
 	}
 
