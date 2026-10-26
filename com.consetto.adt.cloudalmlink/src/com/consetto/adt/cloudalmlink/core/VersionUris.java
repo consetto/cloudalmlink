@@ -2,6 +2,7 @@ package com.consetto.adt.cloudalmlink.core;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,8 +16,35 @@ public final class VersionUris {
 	/** History of a whole class; the other includes only cover local types, macros and test classes */
 	private static final String CLASS_VERSIONS = "includes/main/versions";
 
-	/** The class part of an ADT path, e.g. /sap/bc/adt/oo/classes/zcl_test */
-	private static final Pattern CLASS_PATH = Pattern.compile("^(/sap/bc/adt/(?:oo|classlib)/classes/[^/?#]+)");
+	private static final String SOURCE_VERSIONS = "source/main/versions";
+
+	/**
+	 * Where the versions feed of an object type lives when the object has no versions link.
+	 *
+	 * @param objectPath Matches the object's ADT path in group 1, e.g. /sap/bc/adt/oo/classes/zcl_test
+	 * @param suffix     The feed relative to that path
+	 */
+	private record Feed(Pattern objectPath, String suffix) {
+	}
+
+	/**
+	 * Feeds by the main object type. Verified against live systems: most source objects hang the feed
+	 * off their main source, CDS views and access controls off the object itself. classlib and
+	 * ddlsources occur in editor locations only and are mapped to their ADT paths.
+	 */
+	private static final Map<String, Feed> FEEDS = Map.of(
+			"CLAS", feed("(?:oo|classlib)/classes", CLASS_VERSIONS),
+			"INTF", feed("oo/interfaces", SOURCE_VERSIONS),
+			"PROG", feed("programs/(?:programs|includes)", SOURCE_VERSIONS),
+			"FUGR", feed("functions/groups/[^/?#]+/fmodules", SOURCE_VERSIONS),
+			"BDEF", feed("bo/behaviordefinitions", SOURCE_VERSIONS),
+			"SRVD", feed("ddic/srvd/sources", SOURCE_VERSIONS),
+			"DDLS", feed("ddic/(?:ddl/sources|ddlsources)", "versions"),
+			"DCLS", feed("acm/dcl/sources", "versions"));
+
+	private static Feed feed(String collection, String suffix) {
+		return new Feed(Pattern.compile("^(/sap/bc/adt/" + collection + "/[^/?#]+)"), suffix);
+	}
 
 	/**
 	 * Endpoints of an ADT object.
@@ -75,15 +103,13 @@ public final class VersionUris {
 			versionsUrl = mainVersionsUrl;
 		}
 		if (versionsUrl == null) {
-			if (objectType != null && objectType.startsWith("CLAS/")) {
-				String classPath = findClassPath(adtBasePath, objectUri, rawLocationUri);
-				if (classPath != null) {
-					return new Endpoints(classPath + "/" + CLASS_VERSIONS, transportsUrl);
-				}
-				versionsUrl = CLASS_VERSIONS;
-			} else {
-				versionsUrl = "versions";
+			String mainType = objectType == null ? "" : objectType.split("/", 2)[0];
+			Feed feed = FEEDS.get(mainType);
+			String objectPath = feed == null ? null : findObjectPath(feed, adtBasePath, objectUri, rawLocationUri);
+			if (objectPath != null) {
+				return new Endpoints(objectPath + "/" + feed.suffix(), transportsUrl);
 			}
+			versionsUrl = "CLAS".equals(mainType) ? CLASS_VERSIONS : "versions";
 		}
 
 		if (!versionsUrl.startsWith("/")) {
@@ -93,18 +119,20 @@ public final class VersionUris {
 	}
 
 	/**
-	 * Returns the class path from the first of the given locations that contains one,
-	 * with classlib mapped to oo.
+	 * Returns the object's ADT path from the first of the given locations that is one of the
+	 * feed's objects or part of one, e.g. its source or an include.
 	 */
-	private static String findClassPath(String adtBasePath, String objectUri, String rawLocationUri) {
+	private static String findObjectPath(Feed feed, String adtBasePath, String objectUri, String rawLocationUri) {
 		for (String location : new String[] { adtBasePath, objectUri,
 				AdtResponseParser.extractPathFromRawUri(rawLocationUri) }) {
 			if (location == null) {
 				continue;
 			}
-			Matcher matcher = CLASS_PATH.matcher(location);
+			Matcher matcher = feed.objectPath().matcher(location);
 			if (matcher.find()) {
-				return matcher.group(1).replace("/adt/classlib/", "/adt/oo/");
+				return matcher.group(1)
+						.replace("/adt/classlib/", "/adt/oo/")
+						.replace("/ddic/ddlsources/", "/ddic/ddl/sources/");
 			}
 		}
 		return null;
