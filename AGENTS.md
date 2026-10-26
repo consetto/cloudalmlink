@@ -26,8 +26,8 @@ does; this file describes how to change it.
 ## Checks
 
 ```bash
-mvn verify                              # oldest supported Eclipse (eclipse.release in pom.xml)
-mvn verify -Declipse.release=latest     # newest Eclipse; CI runs both
+./mvnw verify                            # oldest supported Eclipse (eclipse.release in pom.xml)
+./mvnw verify -Declipse.release=latest   # newest Eclipse; CI runs both
 ```
 
 ## Pull requests
@@ -37,4 +37,4 @@ mvn verify -Declipse.release=latest     # newest Eclipse; CI runs both
 - Commit messages: a short plain subject, no conventional-commit prefix.
 - Never commit secrets, tenant names, SAP system IDs or customer data.
 - Version: change `Bundle-Version` in the MANIFEST, `feature.xml` and every `pom.xml` together
-  (`mvn org.eclipse.tycho:tycho-versions-plugin:set-version -DnewVersion=x.y.z-SNAPSHOT`).
+  (`./mvnw org.eclipse.tycho:tycho-versions-plugin:set-version -DnewVersion=x.y.z-SNAPSHOT`).

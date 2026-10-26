@@ -7,7 +7,7 @@ Detailed information can be found at https://cloudalmlink.consetto.com/
 ## Prerequisites
 
 - Java 21 or newer
-- Eclipse IDE 2026-03 or newer (the oldest release the current ADT installs on)
+- Eclipse IDE 2026-06 or newer (the oldest release the current ADT installs on)
 - ABAP Development Tools (ADT) installed
 - Enabled Cloud ALM API with Scope calm-api.features.read
 https://help.sap.com/docs/cloud-alm/apis/enabling-sap-cloud-alm-apis?locale=en-US
@@ -84,8 +84,8 @@ To use this feature:
 The plugin, feature and p2 update site are built with Maven and [Tycho](https://github.com/eclipse-tycho/tycho) (JDK 21, Maven 3.9.9+):
 
 ```bash
-mvn verify                              # against the oldest supported Eclipse (pom.xml: eclipse.release)
-mvn verify -Declipse.release=latest     # against the newest Eclipse release
+./mvnw verify                            # against the oldest supported Eclipse (pom.xml: eclipse.release)
+./mvnw verify -Declipse.release=latest   # against the newest Eclipse release
 ```
 
 Releases: set the version, merge the PR, then push a tag `vX.Y.Z` matching `Bundle-Version`. The release workflow builds the update site and attaches `cloudalmlink-updatesite-X.Y.Z.zip` to a draft GitHub release.
