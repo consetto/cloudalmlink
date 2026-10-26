@@ -236,8 +236,7 @@ public class CalmSourceHandler extends AbstractHandler {
 			versionResource.addContentHandler(versionHandler);
 
 			IHeaders requestHeader = HeadersFactory.newHeaders();
-			IField acceptField = HeadersFactory.newField("Accept",
-					"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8");
+			IField acceptField = HeadersFactory.newField("Accept", "application/atom+xml;type=feed");
 			requestHeader.setField(acceptField);
 
 			return (VersionData) versionResource.get(null, requestHeader, VersionData.class);
