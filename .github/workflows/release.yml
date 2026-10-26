@@ -57,7 +57,7 @@ jobs:
       # Built against the oldest supported Eclipse, like every published version so far; CI has
       # already built the same commit against the latest one.
       - name: Build and test
-        run: mvn -B -ntp verify
+        run: ./mvnw -B -ntp verify
 
       - name: Attach to release
         run: |
