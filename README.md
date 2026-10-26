@@ -7,7 +7,7 @@ Detailed information can be found at https://cloudalmlink.consetto.com/
 ## Prerequisites
 
 - Java 21 or newer
-- Eclipse IDE 2026-03 or newer (the oldest release the current ADT installs on)
+- Eclipse IDE 2026-06 or newer (the oldest release the current ADT installs on)
 - ABAP Development Tools (ADT) installed
 - Enabled Cloud ALM API with Scope calm-api.features.read
 https://help.sap.com/docs/cloud-alm/apis/enabling-sap-cloud-alm-apis?locale=en-US
