@@ -85,6 +85,51 @@ class CorePatternsTest {
 		}
 
 		@Test
+		@DisplayName("should read CORRNR from the response of an object's transports endpoint")
+		void shouldExtractFromCorrnr() {
+			// Shape of com.sap.adt.lock.result2; CORRTEXT may name another transport
+			String response = """
+				<?xml version="1.0" encoding="utf-8"?>
+				<asx:abap version="1.0" xmlns:asx="http://www.sap.com/abapxml">
+				  <asx:values>
+				    <DATA>
+				      <LOCK_HANDLE/>
+				      <CORRNR>A4HK900123</CORRNR>
+				      <CORRUSER>DEVELOPER</CORRUSER>
+				      <CORRTEXT>Follow-up of A4HK900100</CORRTEXT>
+				    </DATA>
+				  </asx:values>
+				</asx:abap>
+				""";
+
+			assertThat(AdtResponseParser.extractTransportId(response)).isEqualTo("A4HK900123");
+		}
+
+		@Test
+		@DisplayName("should read CORRNR with letters in the number")
+		void shouldExtractAlphanumericCorrnr() {
+			assertThat(AdtResponseParser.extractTransportId("<DATA><CORRNR>T4DK9A21AJ</CORRNR></DATA>"))
+					.isEqualTo("T4DK9A21AJ");
+		}
+
+		@ParameterizedTest
+		@DisplayName("should accept letters in the number after its first digit")
+		@CsvSource({
+			"'>T4DK9A21AJ<', T4DK9A21AJ",
+			"'Transport: YI3K8A1A7B', YI3K8A1A7B"
+		})
+		void shouldExtractAlphanumericNumbers(String response, String expected) {
+			assertThat(AdtResponseParser.extractTransportId(response)).isEqualTo(expected);
+		}
+
+		@ParameterizedTest
+		@DisplayName("should not take a transport number out of a longer word")
+		@ValueSource(strings = { "XABCK900001", "ABCK900001X", "ABCKAAAAAA" })
+		void shouldNotMatchInsideWords(String response) {
+			assertThat(AdtResponseParser.extractTransportId(response)).isNull();
+		}
+
+		@Test
 		@DisplayName("should return null for null input")
 		void shouldReturnNullForNullInput() {
 			assertThat(AdtResponseParser.extractTransportId(null)).isNull();
