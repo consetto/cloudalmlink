@@ -2,8 +2,8 @@
 <!--
   Reactor and parent for the Tycho build: plugin, feature, p2 update site, unit tests.
 
-  mvn verify                               builds against the default (oldest supported) Eclipse
-  mvn verify -Declipse.release=latest      builds against the newest Eclipse release
+  ./mvnw verify                             builds against the default (oldest supported) Eclipse
+  ./mvnw verify -Declipse.release=latest    builds against the newest Eclipse release
   Result: com.consetto.adt.cloudalmlink.site/target/repository (p2 update site) and its .zip
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -21,9 +21,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <tycho.version>5.0.4</tycho.version>
-        <!-- The oldest Eclipse release the current ADT installs on (ADT 3.60 needs 4.39 = 2026-03).
-             CI also builds against "latest". -->
-        <eclipse.release>2026-03</eclipse.release>
+        <!-- The oldest Eclipse release the current ADT installs on (ADT 3.62 needs httpcore5 5.4.2,
+             first shipped in 4.40 = 2026-06). CI also builds against "latest". -->
+        <eclipse.release>2026-06</eclipse.release>
         <eclipse.repo>https://download.eclipse.org/releases/${eclipse.release}</eclipse.repo>
         <!-- SAP publishes only the newest ADT; used to compile against, never redistributed. -->
         <adt.repo>https://tools.hana.ondemand.com/latest</adt.repo>
