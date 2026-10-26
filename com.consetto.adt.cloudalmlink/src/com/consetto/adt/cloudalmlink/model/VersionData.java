@@ -8,6 +8,7 @@ import java.util.function.Function;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import com.consetto.adt.cloudalmlink.core.AdtResponseParser;
 import com.consetto.adt.cloudalmlink.core.VersionList;
 import com.consetto.adt.cloudalmlink.handlers.CalmApiHandler;
 import com.consetto.adt.cloudalmlink.services.ICloudAlmApiService;
@@ -94,8 +95,12 @@ public final class VersionData {
 						if ("id".contentEquals(xsr.getLocalName())) {
 							versionElement.setID(xsr.getElementText());
 						}
-						if ("link".contentEquals(xsr.getLocalName())) {
-							versionElement.setTransport(xsr.getAttributeValue(null, "name"));
+						if ("link".contentEquals(xsr.getLocalName())
+								&& AdtResponseParser.isTransportRel(xsr.getAttributeValue(null, "rel"))) {
+							String transportId = xsr.getAttributeValue(null, "name");
+							if (transportId != null && !transportId.isBlank()) {
+								versionElement.setTransport(transportId.trim());
+							}
 						}
 						if ("title".contentEquals(xsr.getLocalName())) {
 							versionElement.setTitle(xsr.getElementText());

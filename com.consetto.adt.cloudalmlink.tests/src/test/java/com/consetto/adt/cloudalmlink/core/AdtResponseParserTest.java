@@ -7,6 +7,9 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 
 /**
@@ -15,6 +18,32 @@ import org.junit.jupiter.api.Test;
  */
 @DisplayName("AtomLinkParser")
 class AdtResponseParserTest {
+
+	@Nested
+	@DisplayName("isTransportRel")
+	class IsTransportRel {
+
+		@ParameterizedTest
+		@DisplayName("should accept transport link relations")
+		@ValueSource(strings = {
+			"http://www.sap.com/adt/relations/transport/request",
+			"http://www.sap.com/adt/relations/transports"
+		})
+		void shouldAcceptTransportRels(String rel) {
+			assertThat(AdtResponseParser.isTransportRel(rel)).isTrue();
+		}
+
+		@ParameterizedTest
+		@DisplayName("should reject other link relations")
+		@NullAndEmptySource
+		@ValueSource(strings = {
+			"http://www.sap.com/adt/relations/versions",
+			"http://www.sap.com/adt/relations/source"
+		})
+		void shouldRejectOtherRels(String rel) {
+			assertThat(AdtResponseParser.isTransportRel(rel)).isFalse();
+		}
+	}
 
 	@Nested
 	@DisplayName("parseAtomLinks")
