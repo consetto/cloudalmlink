@@ -84,8 +84,8 @@ To use this feature:
 The plugin, feature and p2 update site are built with Maven and [Tycho](https://github.com/eclipse-tycho/tycho) (JDK 21, Maven 3.9.9+):
 
 ```bash
-mvn verify                              # against the oldest supported Eclipse (pom.xml: eclipse.release)
-mvn verify -Declipse.release=latest     # against the newest Eclipse release
+./mvnw verify                            # against the oldest supported Eclipse (pom.xml: eclipse.release)
+./mvnw verify -Declipse.release=latest   # against the newest Eclipse release
 ```
 
 Releases: set the version, merge the PR, then push a tag `vX.Y.Z` matching `Bundle-Version`. The release workflow builds the update site and attaches `cloudalmlink-updatesite-X.Y.Z.zip` to a draft GitHub release.

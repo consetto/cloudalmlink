@@ -18,8 +18,8 @@ Eclipse or ADT APIs. If one starts to, the tests module no longer compiles: move
 `core/` and keep only the Eclipse/ADT calls in the handler or view.
 
 ```bash
-mvn verify                                  # whole build including the tests (what CI runs)
-mvn test -f com.consetto.adt.cloudalmlink.tests/pom.xml   # only the unit tests, no Eclipse download
+./mvnw verify                                # whole build including the tests (what CI runs)
+./mvnw test -f com.consetto.adt.cloudalmlink.tests/pom.xml # only the unit tests, no Eclipse download
 ```
 
 In Eclipse or IntelliJ, import `com.consetto.adt.cloudalmlink.tests` as a Maven project and run the

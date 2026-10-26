@@ -2,8 +2,8 @@
 <!--
   Reactor and parent for the Tycho build: plugin, feature, p2 update site, unit tests.
 
-  mvn verify                               builds against the default (oldest supported) Eclipse
-  mvn verify -Declipse.release=latest      builds against the newest Eclipse release
+  ./mvnw verify                             builds against the default (oldest supported) Eclipse
+  ./mvnw verify -Declipse.release=latest    builds against the newest Eclipse release
   Result: com.consetto.adt.cloudalmlink.site/target/repository (p2 update site) and its .zip
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
