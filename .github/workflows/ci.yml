@@ -44,11 +44,13 @@ jobs:
           java-version: '21'
           cache: maven
 
+      # The wrapper pins Maven 3.9.x: Tycho 5.0.4 fails on Maven 3.10 ("Invalid Collect Request"),
+      # which ubuntu-latest ships since 2026-10.
       - name: Build and test
         run: |
           args=""
           if [ "${{ matrix.eclipse }}" != "default" ]; then args="-Declipse.release=${{ matrix.eclipse }}"; fi
-          mvn -B -ntp verify $args
+          ./mvnw -B -ntp verify $args
 
       - name: Upload update site
         uses: actions/upload-artifact@v7
