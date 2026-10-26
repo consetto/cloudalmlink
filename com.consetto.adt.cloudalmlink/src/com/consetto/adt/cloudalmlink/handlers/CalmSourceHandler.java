@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
@@ -22,6 +24,7 @@ import com.consetto.adt.cloudalmlink.core.AdtResponseParser;
 import com.consetto.adt.cloudalmlink.core.VersionUris;
 import com.consetto.adt.cloudalmlink.model.DemoDataProvider;
 import com.consetto.adt.cloudalmlink.model.VersionData;
+import com.consetto.adt.cloudalmlink.util.CloudAlmLinkLogger;
 import com.consetto.adt.cloudalmlink.views.TransportView;
 import com.sap.adt.communication.message.HeadersFactory;
 import com.sap.adt.communication.message.IHeaders;
@@ -36,7 +39,7 @@ import com.sap.adt.tools.core.ui.editors.IAdtFormEditor;
 /**
  * Unified command handler for displaying transports and features associated with ABAP source code.
  * Handles both editor context (active ADT editor) and Project Explorer selection.
- * Retrieves version data from ADT using atom links and displays results in the TransportView.
+ * Retrieves version data from ADT in a job and displays results in the TransportView.
  */
 public class CalmSourceHandler extends AbstractHandler {
 
@@ -55,50 +58,72 @@ public class CalmSourceHandler extends AbstractHandler {
 		if (context == null) {
 			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
 					"Could not determine ABAP object from editor or selection");
-			showTransportView(event, null, null);
+			showTransportView(window, null, null);
 			return null;
 		}
+
+		// Ensure user is logged on to the ABAP system; may show the logon dialog
+		AdtLogonServiceUIFactory.createLogonServiceUI().ensureLoggedOn(
+				context.getAbapProject().getDestinationData(),
+				PlatformUI.getWorkbench().getProgressService());
+
+		Job job = Job.create("Reading transports and Cloud ALM features", monitor -> {
+			readVersions(context, window, monitor);
+		});
+		job.setUser(true);
+		job.schedule();
+		return null;
+	}
+
+	/**
+	 * Reads the object's versions, transports and features from ADT and Cloud ALM and shows them.
+	 * Runs in a job; calls the backend.
+	 */
+	private void readVersions(AdtObjectContext context, IWorkbenchWindow window, IProgressMonitor monitor) {
+		context.loadMissingAtomLinks();
 
 		// Extract URLs from atom links
 		VersionUris.Endpoints urls = VersionUris.find(context.getAtomLinks(), context.getObjectType(),
 				context.getObjectUri(), context.getRawLocationUri());
 		if (urls.versionsUrl() == null) {
-			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
-					"Could not find versions URL for this object");
-			showTransportView(event, null, context.getProject());
-			return null;
+			showError(window, "Could not find versions URL for this object", context.getProject());
+			return;
 		}
-		
-		// Ensure user is logged on to the ABAP system
-		AdtLogonServiceUIFactory.createLogonServiceUI().ensureLoggedOn(
-				context.getAbapProject().getDestinationData(),
-				PlatformUI.getWorkbench().getProgressService());
 
 		String destination = context.getDestination();
 		IRestResourceFactory restResourceFactory = AdtRestResourceFactory.createRestResourceFactory();
 
-		// STEP 1: Fetch the ACTIVE version's transport from /transports endpoint
+		// Transport of the active version, from the object's transports endpoint
 		String activeTransportId = fetchActiveTransport(urls.transportsUrl(), destination, restResourceFactory);
-
-		// STEP 2: Fetch released versions from /versions endpoint
-		VersionData versions = fetchVersions(urls.versionsUrl(), destination, restResourceFactory, window);
-
-		// STEP 2.5: Resolve task transports to parent requests
-		if (versions != null) {
-			enrichUnresolvedFeatures(versions, destination, restResourceFactory);
+		if (monitor.isCanceled()) {
+			return;
 		}
 
-		// STEP 3: Add active transport as first entry if found
-		if (versions != null && activeTransportId != null) {
-			versions.addActiveVersion(activeTransportId);
-			// Also handle active version - if it didn't get a feature, resolve its parent
-			enrichUnresolvedFeatures(versions, destination, restResourceFactory);
+		VersionData versions = fetchVersions(urls.versionsUrl(), destination, restResourceFactory);
+		if (versions == null) {
+			showError(window, "Unable to read the versions for this object. URL " + urls.versionsUrl()
+					+ " did not return the right version.", context.getProject());
+			return;
+		}
+		versions.arrange(activeTransportId);
+		if (monitor.isCanceled()) {
+			return;
 		}
 
-		// Display results in TransportView
-		showTransportView(event, versions, context.getProject());
+		// A version may name a task; Cloud ALM knows its request
+		versions.assignFeatures(id -> resolveParentTransport(id, destination, restResourceFactory));
+		if (monitor.isCanceled()) {
+			return;
+		}
 
-		return null;
+		window.getWorkbench().getDisplay().asyncExec(() -> showTransportView(window, versions, context.getProject()));
+	}
+
+	private void showError(IWorkbenchWindow window, String message, IProject project) {
+		window.getWorkbench().getDisplay().asyncExec(() -> {
+			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error", message);
+			showTransportView(window, null, project);
+		});
 	}
 
 	/**
@@ -198,11 +223,10 @@ public class CalmSourceHandler extends AbstractHandler {
 	 * @param versionsURL The versions endpoint URL
 	 * @param destination The ABAP destination ID
 	 * @param restResourceFactory The REST resource factory
-	 * @param window The workbench window for error dialogs
 	 * @return The parsed version data, or null on error
 	 */
 	private VersionData fetchVersions(String versionsURL, String destination,
-			IRestResourceFactory restResourceFactory, IWorkbenchWindow window) {
+			IRestResourceFactory restResourceFactory) {
 		try {
 			URI versionUri = URI.create(versionsURL);
 			IRestResource versionResource = restResourceFactory.createResourceWithStatelessSession(
@@ -218,8 +242,7 @@ public class CalmSourceHandler extends AbstractHandler {
 
 			return (VersionData) versionResource.get(null, requestHeader, VersionData.class);
 		} catch (RuntimeException e) {
-			MessageDialog.openError(window.getShell(), "ADT Cloud ALM Link Error",
-					"Unable to read the versions for this object. URL " + versionsURL + " did not return the right version.");
+			CloudAlmLinkLogger.logWarning("Failed to read versions from " + versionsURL + ": " + e.getMessage());
 			return null;
 		}
 	}
@@ -262,34 +285,6 @@ public class CalmSourceHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Enriches versions that have a transport ID but no feature by resolving
-	 * task transports to their parent request and retrying the Cloud ALM lookup.
-	 *
-	 * @param versions The version data to enrich
-	 * @param destination The ABAP destination ID
-	 * @param restResourceFactory The REST resource factory
-	 */
-	private void enrichUnresolvedFeatures(VersionData versions, String destination,
-			IRestResourceFactory restResourceFactory) {
-		if (versions.getApiService() == null) {
-			return;
-		}
-
-		for (var version : versions.getVersions()) {
-			String transportId = version.getTransportId();
-			if (transportId != null && !transportId.isEmpty() && version.getFeature() == null) {
-				String parentId = resolveParentTransport(transportId, destination, restResourceFactory);
-				if (!parentId.equals(transportId)) {
-					var feature = versions.getOrFetchFeature(parentId);
-					if (feature != null) {
-						version.setFeature(feature);
-					}
-				}
-			}
-		}
-	}
-
-	/**
 	 * Shows demo data in the TransportView.
 	 */
 	private void showDemoData(ExecutionEvent event) {
@@ -307,9 +302,12 @@ public class CalmSourceHandler extends AbstractHandler {
 	/**
 	 * Displays the version data in the TransportView.
 	 */
-	private void showTransportView(ExecutionEvent event, VersionData versions, IProject project) {
+	private void showTransportView(IWorkbenchWindow window, VersionData versions, IProject project) {
+		if (window.getShell() == null || window.getShell().isDisposed() || window.getActivePage() == null) {
+			return;
+		}
 		try {
-			IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+			IWorkbenchPage workbenchPage = window.getActivePage();
 			workbenchPage.showView(TransportView.ID);
 			TransportView transportView = (TransportView) workbenchPage
 					.findView(TransportView.ID);
