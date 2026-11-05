@@ -82,9 +82,13 @@ public class CloudAlmPeferencePage extends FieldEditorPreferencePage implements 
 			try {
 				PreferenceService.getInstance().setClientSecret(getStringValue());
 			} catch (StorageException | IOException e) {
-				CloudAlmLinkLogger.logError("Cannot save the client secret to Secure Storage: " + e.getMessage());
-				MessageDialog.openError(getShell(), "Cloud ALM Link",
-						"The client secret could not be saved to Eclipse Secure Storage: " + e.getMessage());
+				// Do not lose what the user typed: keep it in the preferences as older versions did;
+				// it moves to Secure Storage as soon as that works again
+				getPreferenceStore().setValue(getPreferenceName(), getStringValue());
+				CloudAlmLinkLogger.logWarning("Cannot save the client secret to Secure Storage: " + e.getMessage());
+				MessageDialog.openWarning(getShell(), "Cloud ALM Link",
+						"The client secret could not be saved to Eclipse Secure Storage (" + e.getMessage()
+								+ "). It is kept unencrypted in the workspace preferences until Secure Storage is available.");
 			}
 		}
 	}

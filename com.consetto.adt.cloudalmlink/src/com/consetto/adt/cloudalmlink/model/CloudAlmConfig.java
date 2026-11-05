@@ -40,6 +40,24 @@ public record CloudAlmConfig(
 	}
 
 	/**
+	 * Names the Cloud ALM account a client secret belongs to, so that workspaces with different
+	 * tenants or clients keep their own secret. Tenant and region are host name labels and
+	 * compared without case; the client ID is kept as it is.
+	 *
+	 * @param tenant   The tenant, or null
+	 * @param region   The region, or null
+	 * @param clientId The OAuth client ID, or null
+	 * @return The account name, e.g. "mycompany.eu10 sb-client!b123"
+	 */
+	public static String secretAccount(String tenant, String region, String clientId) {
+		return lower(tenant) + "." + lower(region) + " " + (clientId == null ? "" : clientId.trim());
+	}
+
+	private static String lower(String value) {
+		return value == null ? "" : value.trim().toLowerCase(java.util.Locale.ROOT);
+	}
+
+	/**
 	 * Checks if a value can safely be used as one label of a host name.
 	 *
 	 * @param value The tenant or region
