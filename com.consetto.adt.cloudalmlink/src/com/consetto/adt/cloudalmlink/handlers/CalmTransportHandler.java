@@ -91,7 +91,7 @@ public class CalmTransportHandler extends AbstractHandler {
 	/**
 	 * Fetches the Cloud ALM feature ID via API for the given transport.
 	 *
-	 * @param transportId The transport request ID (e.g., "S4DK911940")
+	 * @param transportId The transport request ID (e.g., "A4HK900020")
 	 * @return The feature displayId if found, null otherwise
 	 */
 	private String getFeatureFromApi(String transportId) {

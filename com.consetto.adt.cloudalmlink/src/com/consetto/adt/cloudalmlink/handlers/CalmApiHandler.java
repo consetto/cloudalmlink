@@ -34,7 +34,7 @@ import com.google.gson.JsonParseException;
  */
 public class CalmApiHandler implements ICloudAlmApiService {
 
-	/** Transport IDs go into the request path, so only plain IDs like S4DK911940 are accepted. */
+	/** Transport IDs go into the request path, so only plain IDs like A4HK900020 are accepted. */
 	private static final Pattern TRANSPORT_ID = Pattern.compile("[A-Za-z0-9]{1,20}");
 
 	/** Without timeouts an unreachable host blocks the caller (today: the UI thread) indefinitely. */

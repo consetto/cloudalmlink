@@ -143,10 +143,10 @@ class VersionElementTest {
 		}
 
 		@Test
-		@DisplayName("should handle S4D transport format")
-		void shouldHandleS4dFormat() {
-			version.setTransport("S4DK911940");
-			assertThat(version.getTransportId()).isEqualTo("S4DK911940");
+		@DisplayName("should handle a standard transport ID")
+		void shouldHandleStandardFormat() {
+			version.setTransport("A4HK900020");
+			assertThat(version.getTransportId()).isEqualTo("A4HK900020");
 		}
 	}
 

@@ -63,11 +63,11 @@ class CorePatternsTest {
 		@Test
 		@DisplayName("should extract transport ID using general pattern")
 		void shouldExtractUsingGeneralPattern() {
-			String response = "Some text with transport S4DK911940 embedded";
+			String response = "Some text with transport A4HK900020 embedded";
 
 			String result = AdtResponseParser.extractTransportId(response);
 
-			assertThat(result).isEqualTo("S4DK911940");
+			assertThat(result).isEqualTo("A4HK900020");
 		}
 
 		@ParameterizedTest
@@ -75,7 +75,7 @@ class CorePatternsTest {
 		@CsvSource({
 			"'tm:request=\"NPLK900001\"', NPLK900001",
 			"'>DEVK912345<', DEVK912345",
-			"'Transport: S4DK911940', S4DK911940",
+			"'Transport: A4HK900020', A4HK900020",
 			"'ABCK123456 is the ID', ABCK123456",
 			"'Request XYZK000001 created', XYZK000001"
 		})
@@ -529,19 +529,19 @@ class CorePatternsTest {
 		@Test
 		@DisplayName("should extract transport ID with space before colon")
 		void shouldExtractWithSpaceBeforeColon() {
-			String result = AdtResponseParser.extractTocTransportId("ToC from S4DK903536 : 6-3");
+			String result = AdtResponseParser.extractTocTransportId("ToC from A4HK900021 : 6-3");
 
-			assertThat(result).isEqualTo("S4DK903536");
+			assertThat(result).isEqualTo("A4HK900021");
 		}
 
 		@ParameterizedTest
 		@DisplayName("should extract various transport ID formats")
 		@CsvSource({
 			"'ToC from NPLK900001: Description', NPLK900001",
-			"'ToC from S4DK911940: Another desc', S4DK911940",
+			"'ToC from A4HK900020: Another desc', A4HK900020",
 			"'ToC from XYZK000001: Test', XYZK000001",
 			"'ToC from ABCK123456: Fix bug', ABCK123456",
-			"'ToC from S4DK903536 : 6-3', S4DK903536"
+			"'ToC from A4HK900021 : 6-3', A4HK900021"
 		})
 		void shouldExtractVariousFormats(String title, String expected) {
 			assertThat(AdtResponseParser.extractTocTransportId(title)).isEqualTo(expected);
