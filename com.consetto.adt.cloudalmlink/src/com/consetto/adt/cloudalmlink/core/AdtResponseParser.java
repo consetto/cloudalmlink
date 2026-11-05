@@ -129,6 +129,20 @@ public final class AdtResponseParser {
 	}
 
 	/**
+	 * Removes the fragment of a URI, e.g. the #start=… position of a selection in the source.
+	 *
+	 * @param uri The URI, or null
+	 * @return The URI without its fragment; null if uri is null
+	 */
+	public static String stripFragment(String uri) {
+		if (uri == null) {
+			return null;
+		}
+		int hashIndex = uri.indexOf('#');
+		return hashIndex == -1 ? uri : uri.substring(0, hashIndex);
+	}
+
+	/**
 	 * Extracts the transport ID from the response of an object's transports endpoint.
 	 * That response names the request of a locked object in a CORRNR element.
 	 *

@@ -223,6 +223,32 @@ class AdtResponseParserTest {
 	}
 
 	@Nested
+	@DisplayName("stripFragment")
+	class StripFragment {
+
+		@Test
+		@DisplayName("should remove the position of a selection in the source")
+		void shouldRemoveSelectionPosition() {
+			assertThat(AdtResponseParser.stripFragment(
+					"/sap/bc/adt/oo/classes/zcl_test/source/main#start=64,13;end=64,27"))
+				.isEqualTo("/sap/bc/adt/oo/classes/zcl_test/source/main");
+		}
+
+		@Test
+		@DisplayName("should keep a URI without fragment unchanged")
+		void shouldKeepUriWithoutFragment() {
+			assertThat(AdtResponseParser.stripFragment("/sap/bc/adt/oo/classes/zcl_test?version=active"))
+				.isEqualTo("/sap/bc/adt/oo/classes/zcl_test?version=active");
+		}
+
+		@Test
+		@DisplayName("should return null for null input")
+		void shouldReturnNullForNull() {
+			assertThat(AdtResponseParser.stripFragment(null)).isNull();
+		}
+	}
+
+	@Nested
 	@DisplayName("extractPathFromRawUri")
 	class ExtractPathFromRawUri {
 
