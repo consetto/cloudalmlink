@@ -5,6 +5,7 @@ Bundle-SymbolicName: com.consetto.adt.cloudalmlink;singleton:=true
 Bundle-Version: 0.9.6.qualifier
 Bundle-Vendor: Consetto GmbH
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.equinox.security,
  org.eclipse.core.expressions,
  org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor,
