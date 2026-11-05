@@ -35,7 +35,7 @@ Before using the plugin, you need to configure your Cloud ALM tenant settings:
    - **Tenant**: Your Cloud ALM tenant name (e.g., `mycompany`)
    - **Region**: Your Cloud ALM region (e.g., `eu10`)
    - **Client ID**: Your Client ID
-   - **Client Secret**: Your Client Secret
+   - **Client Secret**: Your Client Secret. It is kept encrypted in Eclipse Secure Storage, not in the workspace preferences; a secret saved by an older version is moved there on first use.
    - **Enable Demo Mode**: Try the plugin with sample data, no Cloud ALM connection required
 
 ## Features

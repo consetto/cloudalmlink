@@ -48,4 +48,30 @@ class CloudAlmConfigTest {
 		assertThat(config.tokenUrl()).isEqualTo("https://mycompany.authentication.eu10.hana.ondemand.com/oauth/token");
 		assertThat(config.apiUrl()).isEqualTo("https://mycompany.eu10.alm.cloud.sap/api/calm-features/v1");
 	}
+
+	@Test
+	@DisplayName("should give each tenant, region and client its own secret account")
+	void shouldSeparateSecretAccounts() {
+		String account = CloudAlmConfig.secretAccount("mycompany", "eu10", "sb-client!b1");
+
+		assertThat(account).isEqualTo("mycompany.eu10 sb-client!b1");
+		assertThat(CloudAlmConfig.secretAccount("other", "eu10", "sb-client!b1")).isNotEqualTo(account);
+		assertThat(CloudAlmConfig.secretAccount("mycompany", "us10", "sb-client!b1")).isNotEqualTo(account);
+		assertThat(CloudAlmConfig.secretAccount("mycompany", "eu10", "sb-client!b2")).isNotEqualTo(account);
+	}
+
+	@Test
+	@DisplayName("should ignore case and spaces of tenant and region, but not of the client ID")
+	void shouldNormaliseHostLabelsOnly() {
+		assertThat(CloudAlmConfig.secretAccount(" MyCompany", "EU10 ", " sb-client!b1 "))
+				.isEqualTo("mycompany.eu10 sb-client!b1");
+		assertThat(CloudAlmConfig.secretAccount("mycompany", "eu10", "SB-Client!b1"))
+				.isNotEqualTo(CloudAlmConfig.secretAccount("mycompany", "eu10", "sb-client!b1"));
+	}
+
+	@Test
+	@DisplayName("should accept missing settings")
+	void shouldAcceptMissingSettings() {
+		assertThat(CloudAlmConfig.secretAccount(null, null, null)).isEqualTo(". ");
+	}
 }
