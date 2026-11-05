@@ -46,7 +46,7 @@ View the transports and Cloud ALM features associated with an ABAP object:
 
 - Right-click in the ABAP source editor and select **Show Transports and Features**
 - Right-click on an ABAP object in the **Project Explorer** and select **Show Transports and Features**
-- Or use the keyboard shortcut **Ctrl+6** (Cmd+6 on macOS)
+- Or use the keyboard shortcut **Ctrl+Alt+6** (Cmd+Option+6 on macOS)
 
 Results are displayed in the **Cloud ALM Transports** view, showing transport ID, title, feature, status, responsible person, and more. Use the search field to filter across all columns in real-time.
 

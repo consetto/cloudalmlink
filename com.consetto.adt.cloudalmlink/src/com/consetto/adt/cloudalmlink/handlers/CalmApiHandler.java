@@ -136,6 +136,10 @@ public class CalmApiHandler implements ICloudAlmApiService {
 		try {
 			return httpClient.execute(httpGet, response -> {
 				int statusCode = response.getCode();
+				if (statusCode == 204) {
+					// No feature is linked to the transport
+					return null;
+				}
 				if (statusCode != 200) {
 					CloudAlmLinkLogger.logWarning("Feature API returned status code: " + statusCode + " for transport " + transportId);
 					return null;

@@ -21,6 +21,7 @@ import com.sap.adt.communication.message.IMessageBody;
 import com.sap.adt.communication.resources.AdtRestResourceFactory;
 import com.sap.adt.communication.resources.IRestResource;
 import com.sap.adt.communication.resources.IRestResourceFactory;
+import com.sap.adt.communication.resources.ResourceNotAcceptableException;
 import com.sap.adt.project.IAdtCoreProject;
 import com.sap.adt.project.ui.util.ProjectUtil;
 import com.sap.adt.tools.core.IAdtObjectReference;
@@ -137,7 +138,8 @@ public class AdtObjectContext {
 				return null;
 			}
 
-			context.objectUri = adtObjectRef.getUri().toString();
+			// A selection in the source carries its position as #start=…, which is no resource
+			context.objectUri = AdtResponseParser.stripFragment(adtObjectRef.getUri().toString());
 			context.objectType = adtObjectRef.getType();
 			context.destination = context.abapProject.getDestinationId();
 			context.linksFromBackend = true;
@@ -190,6 +192,10 @@ public class AdtObjectContext {
 					links = AdtResponseParser.parseAtomLinks(response);
 				}
 			}
+		} catch (ResourceNotAcceptableException e) {
+			// Some object types, e.g. classes, are not served as plain XML; the versions feed is
+			// then found from the object type instead
+			CloudAlmLinkLogger.logInfo("No atom links for " + objectUri + ": " + e.getMessage());
 		} catch (Exception e) {
 			CloudAlmLinkLogger.logWarning("Failed to fetch atom links for " + objectUri + ": " + e.getMessage());
 		}

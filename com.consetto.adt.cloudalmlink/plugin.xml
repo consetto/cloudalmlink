@@ -120,7 +120,7 @@
             commandId="com.consetto.adt.cloudalmlink.commands.showtransports"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+6">
+            sequence="M1+M3+6">
       </key>
    </extension>
    <extension
