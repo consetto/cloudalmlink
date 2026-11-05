@@ -1,25 +1,25 @@
 package com.consetto.adt.cloudalmlink.model;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 
-import com.consetto.adt.cloudalmlink.core.AdtResponseParser;
+import com.consetto.adt.cloudalmlink.core.VersionFeedParser;
 import com.consetto.adt.cloudalmlink.core.VersionList;
 import com.consetto.adt.cloudalmlink.handlers.CalmApiHandler;
 import com.consetto.adt.cloudalmlink.services.ICloudAlmApiService;
 import com.sap.adt.communication.content.ContentHandlerException;
 import com.sap.adt.communication.message.IMessageBody;
-import com.sap.adt.tools.core.content.AdtStaxContentHandlerUtility;
 
 /**
  * Holds version/transport data retrieved from ADT.
- * Parses the ATOM+XML versions feed; {@link #arrange(String)} and {@link #assignFeatures(Function)}
- * then complete it.
+ * Parses the ATOM+XML versions feed with {@link VersionFeedParser}; {@link #arrange(String)} and
+ * {@link #assignFeatures(Function)} then complete it.
  */
 public final class VersionData {
 
@@ -76,54 +76,12 @@ public final class VersionData {
 	 */
 	public void parseBody(IMessageBody body) {
 		versions.clear();
-		AdtStaxContentHandlerUtility xmlUtility = new AdtStaxContentHandlerUtility();
-
-		XMLStreamReader xsr = null;
-		try {
-			xsr = xmlUtility.getXMLStreamReader(body);
-			VersionElement versionElement = null;
-			String previousElement = null;
-
-			for (int event = xsr.next(); event != XMLStreamReader.END_DOCUMENT; event = xsr.next()) {
-				if (event == XMLStreamReader.START_ELEMENT) {
-					if ("entry".contentEquals(xsr.getLocalName())) {
-						versionElement = new VersionElement();
-						versions.add(versionElement);
-						continue;
-					}
-					if (versionElement != null) {
-						if ("id".contentEquals(xsr.getLocalName())) {
-							versionElement.setID(xsr.getElementText());
-						}
-						if ("link".contentEquals(xsr.getLocalName())
-								&& AdtResponseParser.isTransportRel(xsr.getAttributeValue(null, "rel"))) {
-							String transportId = xsr.getAttributeValue(null, "name");
-							if (transportId != null && !transportId.isBlank()) {
-								versionElement.setTransport(transportId.trim());
-							}
-						}
-						if ("title".contentEquals(xsr.getLocalName())) {
-							versionElement.setTitle(xsr.getElementText());
-						}
-						if ("updated".contentEquals(xsr.getLocalName())) {
-							versionElement.setLastUpdate(xsr.getElementText());
-						}
-						// Author name is nested within the author element
-						if ("name".contentEquals(xsr.getLocalName()) && "author".contentEquals(previousElement)) {
-							versionElement.setAuthor(xsr.getElementText());
-						}
-						previousElement = xsr.getLocalName();
-					}
-				}
+		try (InputStream content = body.getContent()) {
+			if (content != null) {
+				versions.addAll(VersionFeedParser.parse(content));
 			}
-		} catch (XMLStreamException e) {
+		} catch (XMLStreamException | IOException e) {
 			throw new ContentHandlerException(e.getMessage(), e);
-		} catch (NumberFormatException e) {
-			throw new ContentHandlerException(e.getMessage(), e);
-		} finally {
-			if (xsr != null) {
-				xmlUtility.closeXMLStreamReader(xsr);
-			}
 		}
 	}
 

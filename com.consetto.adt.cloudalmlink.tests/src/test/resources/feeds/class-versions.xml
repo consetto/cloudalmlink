@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Versions feed of a class (.../oo/classes/{name}/includes/main/versions), in the form ADT returns
+  it. Names, transports and texts are made up; A4H is SAP's trial system ID.
+-->
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+  <atom:author>
+    <atom:name>FEEDOWNER</atom:name>
+  </atom:author>
+  <atom:title>Version List of ZCL_EXAMPLE (CLAS)</atom:title>
+  <atom:updated>2026-06-23T11:23:41Z</atom:updated>
+  <atom:entry>
+    <atom:author>
+      <atom:name>DEVELOPER2</atom:name>
+    </atom:author>
+    <atom:content type="text/plain" src="/sap/bc/adt/oo/classes/zcl_example/includes/main/versions/20260623112341/00002/content"/>
+    <atom:id>00002</atom:id>
+    <atom:link href="/sap/bc/adt/cts/transportrequests/A4HK900002" rel="http://www.sap.com/adt/relations/transport/request" type="application/vnd.sap.sscr.cts.transport.request.v1+xml" adtcore:name="A4HK900002" xmlns:adtcore="http://www.sap.com/adt/core"/>
+    <atom:title>6-1234: Änderung am Preis</atom:title>
+    <atom:updated>2026-06-23T11:23:41Z</atom:updated>
+  </atom:entry>
+  <atom:entry>
+    <atom:author>
+      <atom:name>DEVELOPER2</atom:name>
+    </atom:author>
+    <atom:content type="text/plain" src="/sap/bc/adt/oo/classes/zcl_example/includes/main/versions/20260623112209/00000/content"/>
+    <atom:id>00000</atom:id>
+    <atom:title/>
+    <atom:updated>2026-06-23T11:22:09Z</atom:updated>
+  </atom:entry>
+  <atom:entry>
+    <atom:author>
+      <atom:name>DEVELOPER1</atom:name>
+    </atom:author>
+    <atom:content type="text/plain" src="/sap/bc/adt/oo/classes/zcl_example/includes/main/versions/20260622093443/00001/content"/>
+    <atom:id>00001</atom:id>
+    <atom:link href="/sap/bc/adt/oo/classes/zcl_example/includes/main/versions/20260622093443/00001/content" rel="http://www.sap.com/adt/relations/versions/content" type="text/plain"/>
+    <atom:link href="/sap/bc/adt/cts/transportrequests/A4HK9A21AJ" rel="http://www.sap.com/adt/relations/transport/request" type="application/vnd.sap.sscr.cts.transport.request.v1+xml" adtcore:name=" A4HK9A21AJ " xmlns:adtcore="http://www.sap.com/adt/core"/>
+    <atom:title>first</atom:title>
+    <atom:updated>2026-06-22T09:34:43Z</atom:updated>
+  </atom:entry>
+  <atom:entry>
+    <atom:author>
+      <atom:name>TMSADM</atom:name>
+    </atom:author>
+    <atom:content type="text/plain" src="/sap/bc/adt/oo/classes/zcl_example/includes/main/versions/20260622100000/00003/content"/>
+    <atom:id>00003</atom:id>
+    <atom:link href="/sap/bc/adt/cts/transportrequests/A4HK900010" rel="http://www.sap.com/adt/relations/transport/request" type="application/vnd.sap.sscr.cts.transport.request.v1+xml" adtcore:name="A4HK900010" xmlns:adtcore="http://www.sap.com/adt/core"/>
+    <atom:title>ToC from A4HK900001: first</atom:title>
+    <atom:updated>2026-06-22T10:00:00Z</atom:updated>
+  </atom:entry>
+</atom:feed>
