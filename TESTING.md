@@ -11,7 +11,11 @@ compile the plugin's **own sources** (no copies) and test them directly:
 | `core/VersionUris`: versions and transports endpoints of an object | `core/VersionUrisTest`, `core/CorePatternsTest` |
 | `core/CalmIds`: Cloud ALM IDs in ABAP comments | `core/CalmIdsTest`, `core/CorePatternsTest` |
 | `core/VersionSearch`: the search field of the Cloud ALM Transports view | `core/VersionSearchTest` |
+| `core/VersionFeedParser`: the ATOM versions feed of an object | `core/VersionFeedParserTest`, feeds in `src/test/resources/feeds/` |
 | `model/BearerToken`, `CloudAlmConfig`, `CloudAlmItemType`, `FeatureElement`, `VersionElement` | `model/*Test` |
+
+A feed captured from a real system can go into `src/test/resources/feeds/` once user names,
+object names, transport numbers, system IDs and texts are replaced (see AGENTS.md).
 
 The tests module's `pom.xml` lists which plugin sources it compiles. Those classes must not use
 Eclipse or ADT APIs. If one starts to, the tests module no longer compiles: move the new logic into
